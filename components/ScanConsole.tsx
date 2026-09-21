@@ -2,7 +2,7 @@
 import type { Extraction } from "@/lib/fields";
 import type { Stage } from "@/lib/scan";
 
-const STAGE_TEXT: Record<Stage | "queued", string> = { queued: "queued", fetching: "fetching robots.txt + homepage…", extracting: "extracting signals in code…", scoring: "asking Jev (4 questions, 1 request)…", done: "scored", blocked: "blocked by robots.txt", error: "failed" };
+const STAGE_TEXT: Record<Stage | "queued", string> = { queued: "queued", fetching: "fetching robots.txt + homepage…", extracting: "extracting signals in code…", detecting: "Jev: what kind of business is this?…", scoring: "asking Jev (4 questions, 1 request)…", done: "scored", blocked: "blocked by robots.txt", error: "failed" };
 
 function chips(x: Extraction): { k: string; v: string; on: boolean }[] {
   return [
@@ -21,8 +21,8 @@ function chips(x: Extraction): { k: string; v: string; on: boolean }[] {
   ];
 }
 
-export default function ScanConsole({ url, stage, extraction, shell, reason }: { url: string; stage: Stage | "queued"; extraction?: Extraction; shell?: boolean; reason?: string }) {
-  const live = stage === "fetching" || stage === "extracting" || stage === "scoring";
+export default function ScanConsole({ url, stage, extraction, shell, reason, niche }: { url: string; stage: Stage | "queued"; extraction?: Extraction; shell?: boolean; reason?: string; niche?: { key: string; label: string; confidence: number } }) {
+  const live = stage === "fetching" || stage === "extracting" || stage === "detecting" || stage === "scoring";
   return (
     <div className={`border rule p-4 rise ${live ? "scanning" : ""}`}>
       <div className="flex items-baseline justify-between gap-3">
@@ -30,6 +30,7 @@ export default function ScanConsole({ url, stage, extraction, shell, reason }: {
         <div className={`eyebrow whitespace-nowrap ${stage === "done" ? "text-ok" : stage === "blocked" || stage === "error" ? "text-scan" : ""}`}>{STAGE_TEXT[stage]}{live && <span className="blink">_</span>}</div>
       </div>
       {reason && <p className="mt-2 text-sm text-scan">{reason}</p>}
+      {niche && <p className="mt-2 text-sm pop"><span className="bg-accent text-white px-1.5 py-0.5 eyebrow !text-white">niche auto-detected</span> <span className="ml-1">{niche.label}</span> <span className="mono text-xs text-ink-2">{Math.round(niche.confidence * 100)}% confident · questions re-phrased for this niche</span></p>}
       {shell && <p className="mt-2 text-sm"><span className="bg-scan text-white px-1.5 py-0.5 eyebrow !text-white">crawler-invisible</span> This site renders entirely in the browser. Search engines can render it (slowly); most AI assistants cannot. Everything below is what a crawler sees.</p>}
       {extraction && (
         <div className="mt-3 flex flex-wrap gap-1.5">

@@ -74,9 +74,10 @@ function walkTypes(node: unknown, out: Set<string>) {
 }
 
 const TESTIMONIAL_SEL = 'blockquote, q, [class*="testimonial" i], [id*="testimonial" i], [class*="review" i], [class*="quote" i], [itemprop="reviewBody"]';
-const CRED_RE = /\b(certified|certification|member of|IECA|HECA|NACAC|WACAC|founder|years? of experience|former (admissions?|dean|counselor)|admissions officer|licensed|accredited|award-winning|featured in)\b/i;
+const CRED_RE = /\b(certified|certification|member of|IECA|HECA|NACAC|WACAC|founder|years? (of experience|in business)|former (admissions?|dean|counselor|prosecutor|clerk)|admissions officer|licensed|license #?\s?\d|insured|accredited|award-winning|featured in|board.certified|fiduciary|bar admitted|admitted to the bar)\b/i;
+const DEGREE_RE_EXTRA = /\b(CFP|CPA|CFA|LMFT|LCSW|PsyD|ICF|DDS|DMD|RN|Esq\.?|J\.?D\.?)\b/;
 const DEGREE_RE = /\b(M\.?Ed\.?|Ph\.?D\.?|Ed\.?D\.?|M\.?A\.?|B\.?A\.?|M\.?S\.?|J\.?D\.?|MBA)\b(?=[\s,.)(]|$)/; // case-sensitive on purpose: "Med School" must not match M.Ed
-const isCredential = (t: string) => CRED_RE.test(t) || DEGREE_RE.test(t);
+const isCredential = (t: string) => CRED_RE.test(t) || DEGREE_RE.test(t) || DEGREE_RE_EXTRA.test(t);
 const SOCIAL: [string, RegExp][] = [["LinkedIn", /linkedin\.com/i], ["Instagram", /instagram\.com/i], ["Facebook", /facebook\.com/i], ["YouTube", /(youtube\.com|youtu\.be)/i]];
 const GBP_RE = /(google\.com\/maps|maps\.app\.goo\.gl|g\.page\/|business\.google\.com|search\.google\.com\/local|goo\.gl\/maps|google\.com\/search\?.*ludocid)/i;
 const ABOUT_RE = /\b(about|our story|who we are|meet|team|testimonial|review|success stories|results)\b/i;

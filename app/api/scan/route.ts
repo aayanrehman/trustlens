@@ -13,8 +13,9 @@ export async function POST(req: NextRequest) {
   const urls = parseUrls(Array.isArray(body.urls) ? body.urls.join("\n") : String(body.urls ?? ""));
   if (!urls.length) return Response.json({ error: "No URLs" }, { status: 400 });
   if (!process.env.TYPESAFE_API_KEY) return Response.json({ error: "TYPESAFE_API_KEY is not configured on the server" }, { status: 500 });
-  const qs: QuestionDef[] = Array.isArray(body.questions) && body.questions.length ? body.questions : DEFAULT_QUESTIONS;
-  const errors = validateQuestions(qs);
+  // Custom questions only come from the Studio; otherwise the niche Jev detects picks the wording.
+  const qs: QuestionDef[] | undefined = Array.isArray(body.questions) && body.questions.length && body.customQuestions ? body.questions : undefined;
+  const errors = validateQuestions(qs ?? DEFAULT_QUESTIONS);
   if (errors.length) return Response.json({ error: "Questions violate the field contract", errors }, { status: 422 });
   const ip = clientIp(req), source = typeof body.source === "string" ? body.source : "web";
   // Budget + per-visitor limit: transactional in Convex when configured, per-instance memory otherwise.

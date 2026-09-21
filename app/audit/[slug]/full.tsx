@@ -23,7 +23,7 @@ export default function AuditFull({ scan, share }: { scan: { _id: unknown; creat
         </div>
       </div>
       <div className="mt-6"><ResultsGrid results={[r]} thresholds={DEFAULT_THRESHOLDS} questions={DEFAULT_QUESTIONS} /></div>
-      {r.extraction && r.answers && <Report host={r.host} scanId={String(scan._id)} grade={sc?.grade} extraction={r.extraction} answers={r.answers} shell={r.client_only_shell} />}
+      {r.extraction && r.answers && <Report host={r.host} scanId={String(scan._id)} grade={sc?.grade} extraction={r.extraction} answers={r.answers} shell={r.client_only_shell} nicheKey={r.niche?.key} />}
       {open && sc && <ShareWidget host={r.host} grade={sc.grade} overall={sc.overall} auditPath={`/audit/${String(scan._id)}`} share={share} onClose={() => setOpen(false)} />}
     </main>
   );

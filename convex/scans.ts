@@ -39,6 +39,7 @@ export const save = mutation({
       url: v.string(), host: v.string(), status: v.union(v.literal("ok"), v.literal("blocked"), v.literal("error")), reason: v.optional(v.string()),
       client_only_shell: v.optional(v.boolean()), pages_fetched: v.array(v.string()), extraction: v.optional(v.any()), answers: v.optional(v.any()), scored: v.optional(v.any()),
       usage: v.optional(v.object({ input_tokens: v.number(), output_tokens: v.number() })), latency_ms: v.optional(v.object({ fetch: v.number(), jev: v.number() })), model: v.optional(v.string()),
+      niche: v.optional(v.object({ key: v.string(), label: v.string(), confidence: v.number() })),
     }),
   },
   handler: async (ctx, { secret, ipHash, source, result }) => {
@@ -67,8 +68,8 @@ export const patchSpeed = mutation({
 
 import type { Doc } from "./_generated/dataModel";
 const pub = (s: Doc<"scans">) => {
-  const { _id, url, host, status, reason, client_only_shell, pages_fetched, extraction, answers, scored, usage, latency_ms, model, source, createdAt } = s;
-  return { _id, url, host, status, reason, client_only_shell, pages_fetched, extraction, answers, scored, usage, latency_ms, model, source, createdAt }; // never ipHash
+  const { _id, url, host, status, reason, client_only_shell, pages_fetched, extraction, answers, scored, usage, latency_ms, model, niche, source, createdAt } = s;
+  return { _id, url, host, status, reason, client_only_shell, pages_fetched, extraction, answers, scored, usage, latency_ms, model, niche, source, createdAt }; // never ipHash
 };
 
 export const get = query({ args: { id: v.id("scans") }, handler: async (ctx, { id }) => { const s = await ctx.db.get(id); return s ? pub(s) : null; } });

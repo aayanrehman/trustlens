@@ -40,7 +40,8 @@ assert.equal(checkAndReserve("1.1.1.1", 1).ok, false, "31st site in an hour must
 assert.equal(checkAndReserve("2.2.2.2", 1).ok, true, "other visitors unaffected");
 import { buildReport, jsonLd } from "../lib/report";
 const rep = buildReport(empty, {}, "example.com", true);
-assert.ok(rep.length >= 8 && rep[0].impact === 3 && rep.every((r, i) => i === 0 || rep[i - 1].impact >= r.impact), "report sorted by impact");
-assert.equal(buildReport(full, best ? {} : {}, "x.com").filter((r) => r.impact === 3).length, 0, "a full site has no top-impact actions");
-JSON.parse(jsonLd("example.com", empty));
+assert.ok(rep.actions.length >= 8 && rep.actions[0].prerequisite && rep.actions.slice(1).every((r, i, arr) => i === 0 || arr[i - 1].points >= r.points), "prerequisite first, then by points");
+assert.ok(rep.after.overall > rep.now.overall && rep.actions.some((a) => a.points > 0), "fixes add points");
+assert.equal(buildReport(full, {}, "x.com").actions.filter((r) => r.impact === 3).length, 0, "a full site has no top-impact actions");
+JSON.parse(jsonLd("example.com", empty, "home_services"));
 console.log("selfcheck ok");

@@ -1,4 +1,5 @@
 import { FIELDS, type FieldName } from "./fields";
+import { NICHES, DEFAULT_NICHE, type Niche } from "./niches";
 
 // Every Jev question declares the fields it reads. Anything else is refused.
 export type QuestionDef = {
@@ -10,21 +11,30 @@ export type QuestionDef = {
   reads: FieldName[];
 };
 
-export const DEFAULT_QUESTIONS: QuestionDef[] = [
+/** Asked first, on its own: which kind of business is this? Drives the wording of everything after. */
+export const NICHE_QUESTION: QuestionDef = {
+  id: "niche",
+  type: "choice",
+  reads: ["meta_title", "meta_description", "credential_text_blocks", "testimonial_text_blocks"],
+  instructions: "From `meta_title`, `meta_description`, `credential_text_blocks` and `testimonial_text_blocks`, which kind of business is this website for? Pick the closest match.",
+  options: Object.values(NICHES).map((n) => ({ key: n.key, description: `${n.label}: serves ${n.audience}. Typical credentials: ${n.credentials}.` })),
+};
+
+export const questionsFor = (n: Niche): QuestionDef[] => [
   {
     id: "trust_signal_quality",
     type: "score",
     reads: ["testimonial_text_blocks", "credential_text_blocks"],
     instructions:
       "Judge only how specific and verifiable the trust evidence in `testimonial_text_blocks` and `credential_text_blocks` is. " +
-      "A testimonial that names a real outcome (an admission, a scholarship, a specific school) and a first name reads higher than 'great service, highly recommend'. " +
+      `A testimonial that names a real outcome (for example: ${n.testimonialOutcome}) and a first name reads higher than 'great service, highly recommend'. ` +
       "A credential that names a specific checkable organization, role, or certification reads higher than 'experienced professionals'. " +
       "Do not judge writing quality, tone, or how many blocks there are. If both lists are empty, the evidence is at the lowest level.",
     options: [
       { key: "no_credible_signal", description: "No testimonials or credentials are present, or the only text is placeholder, navigation, marketing slogans, or boilerplate unrelated to a client's experience or the consultant's background." },
       { key: "generic_or_unverifiable", description: "Testimonials or credentials exist but are generic praise or generic claims with no specific outcome, name, organization, or checkable fact. Examples: 'Great service, highly recommend!', 'experienced and caring team', 'proven results'." },
       { key: "somewhat_specific", description: "At least one testimonial or credential names a concrete detail such as a first name, a named school or program, a specific result, a named organization, or a number of years of experience, but a reader could not independently check it." },
-      { key: "highly_specific_and_verifiable", description: "Testimonials name a concrete outcome together with a person (first name plus last initial, or a role like 'parent of a 2024 graduate'), or credentials name a specific checkable affiliation such as an IECA, HECA, or NACAC membership, a named certification, a former admissions role at a named university, or a published book." },
+      { key: "highly_specific_and_verifiable", description: `Testimonials name a concrete outcome together with a person (first name plus last initial, or a role), or credentials name a specific checkable affiliation such as ${n.credentials}, or a published book.` },
     ],
   },
   {
@@ -32,13 +42,13 @@ export const DEFAULT_QUESTIONS: QuestionDef[] = [
     type: "noul",
     reads: ["testimonial_text_blocks"],
     instructions:
-      "Do the testimonials in `testimonial_text_blocks` avoid identifying a specific client family? " +
-      "In college consulting, client confidentiality is the norm: first names, initials, a role such as 'parent', a state, or a school on its own are acceptable. " +
-      "A full name (first and last) of a student or parent, or an unmistakable combination of details (a full name with a school, town, or graduation year) is not. " +
+      "Do the testimonials in `testimonial_text_blocks` avoid identifying a specific client? " +
+      `For a ${n.label.toLowerCase()}, client confidentiality is expected: first names, initials, a role, a town, or a general situation on its own are acceptable. ` +
+      "A full name (first and last) of a client, or an unmistakable combination of details (a full name with a town, employer, school, or date), is not. " +
       "If `testimonial_text_blocks` is empty, answer yes.",
     options: [
-      { key: "true", description: "No testimonial gives a student's or parent's full first and last name, and none combines details such as town, school, and year in a way that would let a reader identify the family." },
-      { key: "false", description: "At least one testimonial identifies a specific student or family by full first and last name, or by an unmistakable combination of identifying details." },
+      { key: "true", description: "No testimonial gives a client's full first and last name, and none combines details in a way that would let a reader identify the person." },
+      { key: "false", description: "At least one testimonial identifies a specific client by full first and last name, or by an unmistakable combination of identifying details." },
     ],
   },
   {
@@ -46,7 +56,7 @@ export const DEFAULT_QUESTIONS: QuestionDef[] = [
     type: "score",
     reads: ["schema_types", "has_faq_block", "meta_description"],
     instructions:
-      "An AI assistant is answering the question 'who is a good college consultant near me, and what do they cost?'. " +
+      `An AI assistant is answering the question '${n.aiQuestion}?'. ` +
       "Judge how well this page is set up to be found and cited for that question, using only the structured signals given: " +
       "`schema_types` (structured data types found on the page), `has_faq_block` (whether the page has a question-and-answer section), and `meta_description` (the page's summary text). " +
       "Do not assume any content that is not listed in these fields.",
@@ -65,12 +75,14 @@ export const DEFAULT_QUESTIONS: QuestionDef[] = [
       "From `meta_title`, `meta_description`, and `credential_text_blocks` only, how does this business position itself? " +
       "Judge the specificity of the standing it claims, not the writing style.",
     options: [
-      { key: "reads_as_recognized_authority", description: "The title, description, or credentials name specific checkable markers of standing: a professional membership (IECA, HECA, NACAC), a former admissions or counseling role at a named institution, a named certification or degree, a published book, a press mention, or a specific count of years and students served." },
+      { key: "reads_as_recognized_authority", description: `The title, description, or credentials name specific checkable markers of standing: ${n.credentials}, a published book, a press mention, or a specific count of years and clients served.` },
       { key: "reads_as_competent_but_generic", description: "The text clearly describes a real service in professional wording, but the credibility claims are generic ('experienced', 'expert', 'personalized', 'proven results', 'trusted') with nothing specific or checkable." },
       { key: "reads_as_thin_or_unfinished", description: "The title or description is missing, a default such as 'Home' or 'Untitled', placeholder text, or so vague that a reader cannot tell what the business does, and no credentials are given." },
     ],
   },
 ];
+
+export const DEFAULT_QUESTIONS: QuestionDef[] = questionsFor(DEFAULT_NICHE);
 
 export function validateQuestions(qs: QuestionDef[]): string[] {
   const errors: string[] = [];

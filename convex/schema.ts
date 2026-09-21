@@ -15,6 +15,7 @@ export default defineSchema({
     scored: v.optional(v.any()),
     usage: v.optional(v.object({ input_tokens: v.number(), output_tokens: v.number() })),
     latency_ms: v.optional(v.object({ fetch: v.number(), jev: v.number() })),
+    niche: v.optional(v.object({ key: v.string(), label: v.string(), confidence: v.number() })),
     model: v.optional(v.string()),
     source: v.string(), // "web" | "extension" | "api"
     ipHash: v.string(),

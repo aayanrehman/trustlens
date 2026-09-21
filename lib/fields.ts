@@ -35,6 +35,7 @@ export type SiteResult = {
   answers?: Record<string, JevAnswer>;
   usage?: { input_tokens: number; output_tokens: number };
   latency_ms?: { fetch: number; jev: number }; // measured on the server
+  niche?: { key: string; label: string; confidence: number }; // auto-detected by Jev before scoring
   model?: string;
   scanned_at: string;
 };

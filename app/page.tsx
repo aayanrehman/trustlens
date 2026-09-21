@@ -9,7 +9,7 @@ import TopBar from "@/components/TopBar";
 import ScanConsole from "@/components/ScanConsole";
 import ResultsGrid from "@/components/ResultColumn";
 
-type SiteState = { url: string; stage: Stage | "queued"; extraction?: Extraction; shell?: boolean; result?: SiteResult; reason?: string; scanId?: string };
+type SiteState = { url: string; stage: Stage | "queued"; extraction?: Extraction; shell?: boolean; result?: SiteResult; reason?: string; scanId?: string; niche?: { key: string; label: string; confidence: number } };
 const parse = (s: string) => [...new Set(s.split(/[\n,\s]+/).map((x) => x.trim()).filter(Boolean))].slice(0, 5);
 
 export default function Home() {
@@ -40,7 +40,7 @@ export default function Home() {
     setSites(urls.map((url) => ({ url, stage: "queued" })));
     abort.current = new AbortController();
     try {
-      const res = await fetch("/api/scan", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ urls, questions }), signal: abort.current.signal });
+      const res = await fetch("/api/scan", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ urls, questions, customQuestions: JSON.stringify(questions) !== JSON.stringify(DEFAULT_QUESTIONS) }), signal: abort.current.signal });
       if (!res.ok || !res.body) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
       const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
       for (;;) {
@@ -52,6 +52,7 @@ export default function Home() {
           const e = JSON.parse(line) as ScanEvent;
           if (e.type === "stage") patch(e.url, { stage: e.stage });
           else if (e.type === "extraction") patch(e.url, { extraction: e.extraction, shell: e.client_only_shell });
+          else if (e.type === "niche") patch(e.url, { niche: e.niche });
           else if (e.type === "result") { patch(e.url, { result: e.result, reason: e.result.reason, extraction: e.result.extraction, scanId: e.scanId }); }
           else if (e.type === "psi") setSites((prev) => prev.map((s) => s.url === e.url && s.result?.extraction ? { ...s, extraction: { ...s.extraction!, page_speed_score: e.page_speed_score }, result: { ...s.result, extraction: { ...s.result.extraction, page_speed_score: e.page_speed_score } } } : s));
         }
@@ -88,7 +89,7 @@ export default function Home() {
 
         {sites.length > 0 && !done && (
           <div className="mt-8 grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 3)}, minmax(0, 1fr))` }}>
-            {sites.map((s) => <ScanConsole key={s.url} url={s.url} stage={s.stage} extraction={s.extraction} shell={s.shell} reason={s.reason} />)}
+            {sites.map((s) => <ScanConsole key={s.url} url={s.url} stage={s.stage} extraction={s.extraction} shell={s.shell} reason={s.reason} niche={s.niche} />)}
           </div>
         )}
 

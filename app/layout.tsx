@@ -19,9 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${fraunces.variable} ${inter.variable} ${jet.variable}`}>
       <body className="min-h-screen">
         <header className="border-b rule">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 min-h-14 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
             <Link href="/" className="flex items-center gap-3"><img src="/logo-480.png" alt="" className="h-7 w-auto" /><span className="display text-2xl leading-none">Trust<span className="text-teal">Lens</span></span><span className="eyebrow hidden md:inline">for education consultants</span></Link>
-            <nav className="flex items-center gap-6 text-sm">
+            <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               <Link href="/" className="hover:text-accent">Scan</Link>
               <Link href="/studio" className="hover:text-accent">Classifier Studio</Link>
               {process.env.NEXT_PUBLIC_CONVEX_URL && <Link href="/history" className="hover:text-accent">Live feed</Link>}
