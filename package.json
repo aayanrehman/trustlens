@@ -6,9 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prebuild": "tsx scripts/selfcheck.ts",
+    "selfcheck": "tsx scripts/selfcheck.ts",
+    "checkpoint": "tsx scripts/checkpoint.mts"
   },
   "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "cheerio": "^1.2.0",
+    "idb-keyval": "^6.3.0",
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
@@ -21,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

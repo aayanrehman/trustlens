@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f6f4ee;
+  --ink: #111111;
+  --ink-2: #55524b;
+  --rule: #d9d5cb;
+  --accent: #ff4d00;
+  --accent-ink: #ffffff;
+  --ok: #1a7f37;
 }
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --color-ok: var(--ok);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jet);
 }
+html { background: var(--paper); color: var(--ink); }
+body { font-family: var(--font-inter), system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+.display { font-family: var(--font-fraunces), Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
+.mono { font-family: var(--font-jet), ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--font-jet), monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); }
+.rule { border-color: var(--rule); }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* --- motion --- */
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { opacity: 0; transform: scale(0.85); } 60% { transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes scan { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes grow { from { width: 0; } }
+.rise { animation: rise 0.5s cubic-bezier(.2,.7,.2,1) both; }
+.pop { animation: pop 0.35s cubic-bezier(.2,.7,.2,1) both; }
+.blink { animation: blink 1s steps(1) infinite; }
+.grow { animation: grow 0.8s cubic-bezier(.2,.7,.2,1) both; }
+.scanning { position: relative; overflow: hidden; }
+.scanning::after { content: ""; position: absolute; inset: 0; height: 40%; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 12%, transparent), transparent); animation: scan 1.6s linear infinite; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .rise, .pop, .grow, .scanning::after, .blink { animation: none !important; } }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+input[type="range"] { accent-color: var(--accent); }
+textarea, input[type="text"], input[type="url"] { font: inherit; }
+::selection { background: var(--accent); color: white; }

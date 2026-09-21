@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trustlens.app/contract.schema.json",
+  "title": "TrustLens extracted-field contract",
+  "description": "The ONLY data Jev may read. Every field is computed in code from the fetched pages. Jev never receives raw HTML or full page text. Questions declare which of these fields they read; a question naming any other field is refused.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_types", "has_faq_block", "meta_title", "meta_description", "testimonial_text_blocks", "credential_text_blocks", "google_business_profile_linked", "social_links_found", "page_speed_score", "mobile_friendly", "word_count", "last_modified_signal"],
+  "properties": {
+    "schema_types": { "type": "array", "items": { "type": "string" }, "description": "schema.org @type values found in JSON-LD or microdata. Types that matter for scoring: Organization, LocalBusiness, ProfessionalService, EducationalOrganization, Service, FAQPage, Review, AggregateRating, Person.", "jev": true },
+    "has_faq_block": { "type": "boolean", "description": "FAQPage schema present, OR 3+ question-style headings found.", "jev": true },
+    "meta_title": { "type": "object", "properties": { "text": { "type": "string" }, "length": { "type": "integer" } }, "required": ["text", "length"], "jev": true },
+    "meta_description": { "type": "object", "properties": { "text": { "type": "string" }, "length": { "type": "integer" } }, "required": ["text", "length"], "jev": true },
+    "testimonial_text_blocks": { "type": "array", "items": { "type": "string", "maxLength": 501 }, "maxItems": 10, "description": "Raw text near testimonial/review/quote markers. No judgment applied.", "jev": true },
+    "credential_text_blocks": { "type": "array", "items": { "type": "string", "maxLength": 501 }, "maxItems": 10, "description": "Raw text near markers like certified, member of, IECA, HECA, NACAC, founder, years of experience.", "jev": true },
+    "google_business_profile_linked": { "type": "boolean", "description": "A Google Maps / Business Profile link or embedded map/reviews widget found.", "jev": true },
+    "social_links_found": { "type": "array", "items": { "enum": ["LinkedIn", "Instagram", "Facebook", "YouTube"] }, "jev": true },
+    "page_speed_score": { "type": ["integer", "null"], "minimum": 0, "maximum": 100, "description": "Google PageSpeed Insights mobile performance score. Code only.", "jev": true },
+    "mobile_friendly": { "type": ["boolean", "null"], "description": "PageSpeed 'viewport' audit passed. Code only.", "jev": true },
+    "word_count": { "type": "integer", "minimum": 0, "description": "Visible words across the fetched pages (max 2).", "jev": true },
+    "last_modified_signal": { "type": "string", "description": "Last-Modified header, article:modified_time, dateModified, or a visible 'last updated' string; 'unknown' if absent.", "jev": true }
+  }
+}
