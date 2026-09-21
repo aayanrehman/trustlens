@@ -11,10 +11,11 @@ export async function GET(req: NextRequest) {
   if (!p) return new Response("bad payload", { status: 400 });
   const size = 420, cx = size / 2, cy = size / 2, r = size * 0.36;
   const pts = radarPoints(p.s, r, cx, cy).map((q) => q.join(",")).join(" ");
-  const rings = [25, 50, 75, 100].map((k) => radarPoints([k, k, k, k], r, cx, cy).map((q) => q.join(",")).join(" "));
-  const axes = radarPoints([100, 100, 100, 100], r, cx, cy);
-  const labels = ["SEO", "GEO", "TRUST", "DISCOVER"];
-  const lp = radarPoints([126, 126, 126, 126], r, cx, cy);
+  const full = (k: number) => p.s.map(() => k);
+  const rings = [25, 50, 75, 100].map((k) => radarPoints(full(k), r, cx, cy).map((q) => q.join(",")).join(" "));
+  const axes = radarPoints(full(100), r, cx, cy);
+  const labels = ["SEO", "GEO", "TRUST", "DISCOVER", "AUTHORITY"];
+  const lp = radarPoints(full(128), r, cx, cy);
   const bad = p.g === "D" || p.g === "F";
   return new ImageResponse(
     (
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", fontFamily: "monospace" }}>
             <div style={{ fontSize: 30 }}>{p.h}</div>
-            <div style={{ fontSize: 18, color: "#55524b", marginTop: 6 }}>{`Scored ${p.d} · SEO ${p.s[0]} · GEO ${p.s[1]} · Trust ${p.s[2]} · Discoverability ${p.s[3]}`}</div>
+            <div style={{ fontSize: 18, color: "#55524b", marginTop: 6 }}>{`Scored ${p.d} · SEO ${p.s[0]} · GEO ${p.s[1]} · Trust ${p.s[2]} · Discoverability ${p.s[3]}${p.s[4] != null ? ` · Authority ${p.s[4]}` : ""}`}</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>

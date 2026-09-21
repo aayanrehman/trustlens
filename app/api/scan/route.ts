@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { scanSite, parseUrls, type ScanEvent } from "@/lib/scan";
 import { DEFAULT_QUESTIONS, validateQuestions, type QuestionDef } from "@/lib/questions";
+import { checkAndReserve, clientIp, settle } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 120; // PageSpeed alone can take 60s+ on heavy sites
@@ -14,11 +15,13 @@ export async function POST(req: NextRequest) {
   const qs: QuestionDef[] = Array.isArray(body.questions) && body.questions.length ? body.questions : DEFAULT_QUESTIONS;
   const errors = validateQuestions(qs);
   if (errors.length) return Response.json({ error: "Questions violate the field contract", errors }, { status: 422 });
+  const gate = checkAndReserve(clientIp(req), urls.length);
+  if (!gate.ok) return Response.json({ error: gate.reason }, { status: 429 });
 
   const enc = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const emit = (e: ScanEvent) => controller.enqueue(enc.encode(JSON.stringify(e) + "\n"));
+      const emit = (e: ScanEvent) => { if (e.type === "result" && e.result.usage) settle(e.result.usage.input_tokens); controller.enqueue(enc.encode(JSON.stringify(e) + "\n")); };
       await Promise.all(urls.map((u) => scanSite(u, qs, emit).catch((err) => emit({ type: "result", url: u, result: { url: u, host: u, pages_fetched: [], status: "error", reason: String(err?.message ?? err), scanned_at: new Date().toISOString() } }))));
       controller.close();
     },

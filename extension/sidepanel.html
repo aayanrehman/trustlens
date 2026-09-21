@@ -10,9 +10,14 @@
   main { padding:16px; }
   button { font:inherit; cursor:pointer; }
   .primary { width:100%; background:var(--ink); color:var(--paper); border:0; padding:12px; letter-spacing:.04em; }
-  .primary:hover { background:var(--acc); } .primary:disabled { opacity:.4; }
+  .primary:hover { background:var(--acc); } .primary:disabled { opacity:.5; }
+  .primary.live { background:linear-gradient(90deg,var(--ink) 0%,var(--ink) 40%,#333 50%,var(--ink) 60%); background-size:200% 100%; animation: shimmer 1.4s linear infinite; } @keyframes shimmer { from { background-position:200% 0 } to { background-position:-200% 0 } }
+  details { margin-top:10px; } summary { cursor:pointer; }
   textarea { width:100%; box-sizing:border-box; border:1px solid var(--rule); background:#fff; padding:8px; font:12px ui-monospace, monospace; resize:vertical; margin-top:6px; }
-  .status { margin-top:12px; display:flex; justify-content:space-between; } .blink { animation: blink 1s steps(1) infinite; } @keyframes blink { 50% { opacity:0 } }
+  .status { margin-top:12px; display:flex; justify-content:space-between; align-items:baseline; } .blink { animation: blink 1s steps(1) infinite; } @keyframes blink { 50% { opacity:0 } }
+  .track { height:3px; background:#e6e2d8; margin-top:8px; } .track i { display:block; height:100%; width:0; background:var(--acc); transition:width .2s; }
+  .log { margin-top:8px; height:64px; overflow:hidden; font:11px ui-monospace, monospace; color:var(--ink2); display:flex; flex-direction:column; justify-content:flex-end; }
+  .log div { animation: rise .25s both; } .log .sig { color:var(--acc); }
   .chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:10px; }
   .chip { border:1px solid var(--rule); color:var(--ink2); padding:2px 7px; font:11px ui-monospace, monospace; animation: pop .35s both; } .chip.on { border-color:var(--ink); color:var(--ink); }
   @keyframes pop { from { opacity:0; transform:scale(.85) } to { opacity:1; transform:none } }
@@ -22,16 +27,19 @@
   ul { margin:6px 0 0; padding-left:16px; color:var(--ink2); font-size:12px; } .okmsg { color:var(--ok); font-size:12px; margin-top:4px; }
   .grade { display:flex; gap:16px; align-items:center; margin-top:18px; padding-top:14px; border-top:1px solid var(--rule); animation: rise .5s both; }
   .grade .letter { font-family: Georgia, serif; font-size:96px; line-height:.9; } .bad { color:var(--acc); } .good { color:var(--ok); }
-  .links { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; } .links a { border:1px solid var(--ink); padding:6px 10px; font-size:12px; color:var(--ink); text-decoration:none; } .links a:hover { background:var(--ink); color:var(--paper); }
+  .links { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; } .links a, .links button { border:1px solid var(--ink); background:none; padding:7px 10px; font-size:12px; color:var(--ink); text-decoration:none; } .links .fill { background:var(--ink); color:var(--paper); } .links a:hover, .links button:hover { background:var(--acc); color:#fff; border-color:var(--acc); }
   .cost { margin-top:14px; font-size:11px; color:var(--ink2); } .warn { border:1px solid var(--acc); padding:8px; font-size:12px; margin-top:12px; }
   .err { color:var(--acc); margin-top:10px; font-size:12px; }
+  .sheet { position:fixed; inset:0; background:rgba(17,17,17,.5); display:flex; align-items:flex-end; padding:12px; z-index:9; } .sheet > div { background:var(--paper); border:1px solid var(--ink); padding:14px; width:100%; animation: rise .3s both; }
+  .sheet img { width:100%; border:1px solid var(--rule); margin-top:10px; } .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; } .grid2 a, .grid2 button { border:1px solid var(--ink); background:none; padding:8px; font-size:12px; text-align:center; color:var(--ink); text-decoration:none; } .grid2 a:hover, .grid2 button:hover { background:var(--ink); color:var(--paper); }
 </style></head>
 <body>
 <header><div class="wordmark">Trust<b>Lens</b></div><div id="host" class="mono" style="font-size:12px"></div></header>
 <main>
   <button id="scan" class="primary">Scan this page</button>
-  <label class="eyebrow" style="display:block;margin-top:12px">Compare against (optional, up to 4 URLs)<textarea id="competitors" rows="2" placeholder="keystoneprep.com&#10;solomonadmissions.com"></textarea></label>
+  <details><summary class="eyebrow">Compare against competitors (optional)</summary><textarea id="competitors" rows="2" placeholder="keystoneprep.com&#10;solomonadmissions.com"></textarea></details>
   <div id="out"></div>
 </main>
+<div id="sheet"></div>
 <script src="sidepanel.js"></script>
 </body></html>

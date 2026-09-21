@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { askJev } from "@/lib/jev";
 import { validateQuestions, type QuestionDef } from "@/lib/questions";
 import type { Extraction } from "@/lib/fields";
+import { checkAndReserve, clientIp, settle } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -15,8 +16,10 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(qs) || !qs.length) return Response.json({ error: "questions required" }, { status: 400 });
   const errors = validateQuestions(qs);
   if (errors.length) return Response.json({ error: "Refused: questions violate the field contract", errors }, { status: 422 });
+  const gate = checkAndReserve(clientIp(req), Math.min(5, items.length));
+  if (!gate.ok) return Response.json({ error: gate.reason }, { status: 429 });
   const results = await Promise.all(items.slice(0, 5).map(async ({ url, extraction }) => {
-    try { const r = await askJev(extraction, qs); return { url, ...r }; }
+    try { const r = await askJev(extraction, qs); settle(r.usage.input_tokens); return { url, ...r }; }
     catch (e) { return { url, error: (e as Error).message }; }
   }));
   return Response.json({ results });

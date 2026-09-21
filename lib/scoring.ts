@@ -23,7 +23,11 @@ const DISC = { gbp: 35, social: 35, depth: 15, freshness: 15 };
 
 export type Category = "seo" | "geo" | "trust" | "discoverability";
 export type CategoryResult = { score: number; issues: string[] };
-export type Scored = { categories: Record<Category, CategoryResult>; overall: number; grade: "A" | "B" | "C" | "D" | "F" };
+export type Scored = { categories: Record<Category, CategoryResult>; overall: number; grade: "A" | "B" | "C" | "D" | "F"; authority: number };
+// Fifth axis on the radar only: how the site positions itself. Not part of the overall grade.
+const AUTHORITY_AXIS: Record<string, number> = { reads_as_recognized_authority: 100, reads_as_competent_but_generic: 55, reads_as_thin_or_unfinished: 15 };
+export const RADAR_LABELS = ["SEO", "GEO", "Trust", "Discover", "Authority"];
+export const radarValues = (s: Scored) => [s.categories.seo.score, s.categories.geo.score, s.categories.trust.score, s.categories.discoverability.score, s.authority];
 
 const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 const scoreLevel = (a: JevAnswer | undefined) => (a?.type === "score" ? a.score / Math.max(1, Object.keys(a.legend).length - 1) : 0); // 0..1
@@ -93,7 +97,9 @@ export function scoreSite(x: Extraction, answers: Record<string, JevAnswer>, t: 
   const wsum = w.seo + w.geo + w.trust + w.discoverability || 1;
   const overall = clamp((categories.seo.score * w.seo + categories.geo.score * w.geo + categories.trust.score * w.trust + categories.discoverability.score * w.discoverability) / wsum);
   const grade = overall >= t.grade.A ? "A" : overall >= t.grade.B ? "B" : overall >= t.grade.C ? "C" : overall >= t.grade.D ? "D" : "F";
-  return { categories, overall, grade };
+  const ap = answers.authority_positioning;
+  const authority = ap?.type === "choice" ? AUTHORITY_AXIS[ap.choice] ?? Math.round((ap.probabilities.reads_as_recognized_authority ?? 0) * 100) : 0;
+  return { categories, overall, grade, authority };
 }
 
 export const CATEGORY_LABELS: Record<Category, string> = { seo: "SEO", geo: "GEO", trust: "Trust", discoverability: "Discoverability" };

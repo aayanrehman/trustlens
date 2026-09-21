@@ -33,4 +33,8 @@ assert.equal(scoreSite({ ...full, page_speed_score: null }, {}).categories.seo.s
 assert.equal(robotsAllows({ allow: [], disallow: ["/"] }, "/"), false);
 assert.equal(robotsAllows({ allow: ["/about"], disallow: ["/"] }, "/about"), true);
 assert.equal(robotsAllows({ allow: [], disallow: ["/private"] }, "/"), true);
+import { checkAndReserve, LIMITS } from "../lib/ratelimit";
+for (let i = 0; i < LIMITS.sitesPerIpPerHour; i++) assert.equal(checkAndReserve("1.1.1.1", 1).ok, true);
+assert.equal(checkAndReserve("1.1.1.1", 1).ok, false, "31st site in an hour must be refused");
+assert.equal(checkAndReserve("2.2.2.2", 1).ok, true, "other visitors unaffected");
 console.log("selfcheck ok");

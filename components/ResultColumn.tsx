@@ -2,7 +2,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { SiteResult, JevAnswer } from "@/lib/fields";
-import { scoreSite, CATEGORY_ORDER, CATEGORY_LABELS, humanize, type Thresholds, type Category } from "@/lib/scoring";
+import { scoreSite, radarValues, CATEGORY_ORDER, CATEGORY_LABELS, humanize, type Thresholds, type Category } from "@/lib/scoring";
+import ShareWidget from "./ShareWidget";
 import type { QuestionDef } from "@/lib/questions";
 import { buildState } from "@/lib/jev";
 import { encodeShare, slugify } from "@/lib/share";
@@ -36,6 +37,7 @@ const cell = "border rule bg-white/40 px-4 py-3 min-w-0";
 export default function ResultsGrid({ results, thresholds, questions }: { results: SiteResult[]; thresholds: Thresholds; questions: QuestionDef[] }) {
   const n = Math.max(1, results.length);
   const [step, setStep] = useState(0); // 0..5
+  const [sharing, setSharing] = useState<{ host: string; grade: string; overall: number; auditPath: string; share: string } | null>(null);
   const key = results.map((r) => r.url + r.status).join("|");
   useEffect(() => { setStep(0); const t = setInterval(() => setStep((s) => (s >= 5 ? (clearInterval(t), s) : s + 1)), 500); return () => clearInterval(t); }, [key]);
 
@@ -67,8 +69,9 @@ export default function ResultsGrid({ results, thresholds, questions }: { result
     const s = scored[j];
     if (step < 5) return <div key={"g" + r.url} className={cell} />;
     if (!s || !r.extraction || !r.answers) return <div key={"g" + r.url} className={`${cell} rise`}><div className="display text-6xl text-accent">{r.status === "blocked" ? "Skipped" : "—"}</div></div>;
-    const values = CATEGORY_ORDER.map((c) => s.categories[c].score);
-    const share = encodeShare({ h: r.host, g: s.grade, o: s.overall, s: values as [number, number, number, number], d: r.scanned_at.slice(0, 10) });
+    const values = radarValues(s);
+    const share = encodeShare({ h: r.host, g: s.grade, o: s.overall, s: values, d: r.scanned_at.slice(0, 10) });
+    const auditPath = `/audit/${slugify(r.host)}?d=${share}`;
     const state = buildState(r.extraction, questions);
     const auth = r.answers.authority_positioning;
     return (
@@ -83,8 +86,8 @@ export default function ResultsGrid({ results, thresholds, questions }: { result
         </div>
         <div className="-mx-2"><Radar values={values} size={n >= 4 ? 180 : 230} /></div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <Link href={`/audit/${slugify(r.host)}?d=${share}`} className="border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper">Get my score →</Link>
-          <a href={`/api/og?d=${share}`} download={`trustlens-${slugify(r.host)}.png`} className="border rule px-3 py-1.5 hover:border-ink">Download PNG</a>
+          <button onClick={() => setSharing({ host: r.host, grade: s.grade, overall: s.overall, auditPath, share })} className="bg-ink text-paper px-3 py-1.5 hover:bg-accent">Share my score</button>
+          <Link href={auditPath} className="border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper">Public page →</Link>
         </div>
         <details className="mt-3 text-xs">
           <summary className="cursor-pointer eyebrow hover:text-accent">What Jev saw · {r.usage?.input_tokens.toLocaleString()} tokens · ${(((r.usage?.input_tokens ?? 0) * 0.042) / 1e6).toFixed(4)}</summary>
@@ -98,6 +101,7 @@ export default function ResultsGrid({ results, thresholds, questions }: { result
 
   return (
     <div className="overflow-x-auto -mx-4 px-4">
+      {sharing && <ShareWidget {...sharing} onClose={() => setSharing(null)} />}
       <div className="grid gap-x-3 gap-y-2" style={{ gridTemplateColumns: `repeat(${n}, minmax(${n > 2 ? 280 : 360}px, 1fr))` }}>
         {rows.flat()}
       </div>
