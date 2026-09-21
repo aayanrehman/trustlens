@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>TrustLens</title>
+<style>
+  :root { --paper:#f6f4ee; --ink:#111; --ink2:#55524b; --rule:#d9d5cb; --acc:#ff4d00; --ok:#1a7f37; }
+  html,body { margin:0; background:var(--paper); color:var(--ink); font:14px/1.45 Inter, system-ui, sans-serif; }
+  .mono { font-family: ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .eyebrow { font-family: ui-monospace, monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink2); }
+  header { display:flex; justify-content:space-between; align-items:baseline; padding:14px 16px; border-bottom:1px solid var(--rule); }
+  .wordmark { font-family: Georgia, serif; font-size:22px; } .wordmark b { color:var(--acc); font-weight:400; }
+  main { padding:16px; }
+  button { font:inherit; cursor:pointer; }
+  .primary { width:100%; background:var(--ink); color:var(--paper); border:0; padding:12px; letter-spacing:.04em; }
+  .primary:hover { background:var(--acc); } .primary:disabled { opacity:.4; }
+  textarea { width:100%; box-sizing:border-box; border:1px solid var(--rule); background:#fff; padding:8px; font:12px ui-monospace, monospace; resize:vertical; margin-top:6px; }
+  .status { margin-top:12px; display:flex; justify-content:space-between; } .blink { animation: blink 1s steps(1) infinite; } @keyframes blink { 50% { opacity:0 } }
+  .chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:10px; }
+  .chip { border:1px solid var(--rule); color:var(--ink2); padding:2px 7px; font:11px ui-monospace, monospace; animation: pop .35s both; } .chip.on { border-color:var(--ink); color:var(--ink); }
+  @keyframes pop { from { opacity:0; transform:scale(.85) } to { opacity:1; transform:none } }
+  @keyframes rise { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+  .cat { margin-top:14px; animation: rise .45s both; } .cat .row { display:flex; justify-content:space-between; align-items:baseline; }
+  .bar { height:3px; background:#e6e2d8; margin-top:4px; } .bar i { display:block; height:100%; background:var(--ink); animation: grow .8s both; } @keyframes grow { from { width:0 } }
+  ul { margin:6px 0 0; padding-left:16px; color:var(--ink2); font-size:12px; } .okmsg { color:var(--ok); font-size:12px; margin-top:4px; }
+  .grade { display:flex; gap:16px; align-items:center; margin-top:18px; padding-top:14px; border-top:1px solid var(--rule); animation: rise .5s both; }
+  .grade .letter { font-family: Georgia, serif; font-size:96px; line-height:.9; } .bad { color:var(--acc); } .good { color:var(--ok); }
+  .links { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; } .links a { border:1px solid var(--ink); padding:6px 10px; font-size:12px; color:var(--ink); text-decoration:none; } .links a:hover { background:var(--ink); color:var(--paper); }
+  .cost { margin-top:14px; font-size:11px; color:var(--ink2); } .warn { border:1px solid var(--acc); padding:8px; font-size:12px; margin-top:12px; }
+  .err { color:var(--acc); margin-top:10px; font-size:12px; }
+</style></head>
+<body>
+<header><div class="wordmark">Trust<b>Lens</b></div><div id="host" class="mono" style="font-size:12px"></div></header>
+<main>
+  <button id="scan" class="primary">Scan this page</button>
+  <label class="eyebrow" style="display:block;margin-top:12px">Compare against (optional, up to 4 URLs)<textarea id="competitors" rows="2" placeholder="keystoneprep.com&#10;solomonadmissions.com"></textarea></label>
+  <div id="out"></div>
+</main>
+<script src="sidepanel.js"></script>
+</body></html>

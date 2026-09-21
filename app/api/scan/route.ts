@@ -25,3 +25,5 @@ export async function POST(req: NextRequest) {
   });
   return new Response(stream, { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store", "x-accel-buffering": "no" } });
 }
+
+export function OPTIONS() { return new Response(null, { status: 204 }); }

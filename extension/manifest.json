@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "TrustLens",
+  "version": "0.1.0",
+  "description": "Score the site you're on for Trust, SEO, GEO and Discoverability — judged by TypeSafe's Jev.",
+  "permissions": ["activeTab", "sidePanel", "scripting", "storage"],
+  "action": { "default_title": "TrustLens — scan this site" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "background": { "service_worker": "background.js" },
+  "icons": { "128": "icon128.png" }
+}

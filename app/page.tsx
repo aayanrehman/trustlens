@@ -23,7 +23,7 @@ export default function Home() {
 
   useEffect(() => {
     loadActive().then((p) => { if (p) { setQuestions(p.questions); setThresholds(p.thresholds); } });
-    const u = new URLSearchParams(window.location.search).get("u"); if (u) setInput(u);
+    const sp = new URLSearchParams(window.location.search); const u = sp.get("u"); if (u) { setInput(u); if (sp.get("go")) setTimeout(() => document.querySelector<HTMLButtonElement>("form button[type=submit]")?.click(), 400); }
   }, []);
 
   const urls = useMemo(() => parse(input), [input]);
