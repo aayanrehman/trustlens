@@ -7,7 +7,7 @@ export default function ShareWidget({ host, grade, overall, auditPath, share, on
   const [url, setUrl] = useState(auditPath);
   const [copied, setCopied] = useState(false);
   useEffect(() => { setUrl(new URL(auditPath, window.location.origin).toString()); }, [auditPath]);
-  const text = `${host} scored ${grade} (${overall}/100) on TrustLens — SEO, AI search visibility, trust, authority and discoverability — judged by AI. Built for education consultants.`;
+  const text = `${host} scored ${grade} (${overall}/100) on TrustLens — SEO, AI search visibility, trust, authority and discoverability — judged by AI.`;
   const li = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
   const x = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
   const copy = async () => { try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {} };

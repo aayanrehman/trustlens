@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
             <img src={`${origin}/logo-480.png`} width={88} height={44} alt="" />
             <div style={{ display: "flex", fontSize: 34 }}><span>Trust</span><span style={{ color: TEAL }}>Lens</span></div>
           </div>
-          <div style={{ display: "flex", fontSize: 16, fontFamily: "monospace", color: "#4b5567", letterSpacing: 2 }}>TRUST & AI-VISIBILITY AUDIT · EDUCATION CONSULTANTS</div>
+          <div style={{ display: "flex", fontSize: 16, fontFamily: "monospace", color: "#4b5567", letterSpacing: 2 }}>TRUST & AI-VISIBILITY AUDIT · SERVICE BUSINESSES</div>
         </div>
         <div style={{ display: "flex", flex: 1, marginTop: 10 }}>
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1 }}>

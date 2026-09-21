@@ -10,8 +10,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jet = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet", weight: ["400", "500"] });
 
 export const metadata: Metadata = {
-  title: "TrustLens — trust & AI-visibility audit for education consultants",
-  description: "Paste a URL. Get an SEO, GEO, Trust and Discoverability grade, scored live by TypeSafe's Jev from a strict field contract.",
+  title: "TrustLens — trust & AI-visibility audit for service businesses",
+  description: "Paste a URL. Jev detects the niche, then grades SEO, AI search visibility, trust, authority and discoverability from a strict field contract.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <header className="border-b rule">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 min-h-14 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
-            <Link href="/" className="flex items-center gap-3"><img src="/logo-480.png" alt="" className="h-7 w-auto" /><span className="display text-2xl leading-none">Trust<span className="text-teal">Lens</span></span><span className="eyebrow hidden md:inline">for education consultants</span></Link>
+            <Link href="/" className="flex items-center gap-3"><img src="/logo-480.png" alt="" className="h-7 w-auto" /><span className="display text-2xl leading-none">Trust<span className="text-teal">Lens</span></span><span className="eyebrow hidden md:inline">for service businesses</span></Link>
             <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               <Link href="/" className="hover:text-accent">Scan</Link>
               <Link href="/studio" className="hover:text-accent">Classifier Studio</Link>

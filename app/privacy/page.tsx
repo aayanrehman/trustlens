@@ -7,7 +7,7 @@ export default function Privacy() {
     <main className="mx-auto max-w-2xl px-4 sm:px-6 py-12 text-[15px] leading-relaxed">
       <div className="eyebrow">Privacy policy · last updated 21 September 2026</div>
       <h1 className="display text-4xl mt-2">TrustLens privacy</h1>
-      <p className="mt-6">TrustLens (the website and the Chrome extension) audits publicly available websites. It is made by Waterfall Growth for education consultants.</p>
+      <p className="mt-6">TrustLens (the website and the Chrome extension) audits publicly available websites. It is made by Waterfall Growth for service businesses.</p>
       <h2 className="display text-2xl mt-8">What the extension does</h2>
       <p className="mt-2">When you click <em>Scan this page</em>, the extension reads the URL of the tab you are on and sends that URL to the TrustLens server. It also draws temporary outlines on the page you are viewing to show what it found. It does nothing until you click, and it never runs on pages you have not asked it to scan.</p>
       <h2 className="display text-2xl mt-8">What we collect</h2>
