@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import ConvexClient from "@/components/ConvexClient";
+import LiveStats from "@/components/LiveStats";
 
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", weight: "variable", axes: ["opsz"] });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -22,11 +24,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="flex items-center gap-6 text-sm">
               <Link href="/" className="hover:text-accent">Scan</Link>
               <Link href="/studio" className="hover:text-accent">Classifier Studio</Link>
+              {process.env.NEXT_PUBLIC_CONVEX_URL && <Link href="/history" className="hover:text-accent">Live feed</Link>}
               <a href="https://docs.typesafe.ai" target="_blank" rel="noreferrer" className="eyebrow hover:text-accent">Jev by TypeSafe ↗</a>
+              {process.env.NEXT_PUBLIC_CONVEX_URL && <ConvexClient><LiveStats /></ConvexClient>}
             </nav>
           </div>
         </header>
-        {children}
+        <ConvexClient>{children}</ConvexClient>
       </body>
     </html>
   );

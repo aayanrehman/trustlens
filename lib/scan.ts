@@ -9,11 +9,11 @@ export type Stage = "fetching" | "extracting" | "scoring" | "done" | "blocked" |
 export type ScanEvent =
   | { type: "stage"; url: string; stage: Stage }
   | { type: "extraction"; url: string; extraction: Extraction; pages: string[]; client_only_shell: boolean }
-  | { type: "result"; url: string; result: SiteResult; scored?: Scored }
+  | { type: "result"; url: string; result: SiteResult; scored?: Scored; scanId?: string }
   | { type: "psi"; url: string; page_speed_score: number | null; error?: string; scored?: Scored };
 
 /** Scan one site. Emits stages, the extraction, the Jev result, then PageSpeed when it lands (it is the slow one). */
-export async function scanSite(url: string, qs: QuestionDef[] = DEFAULT_QUESTIONS, emit: (e: ScanEvent) => void = () => {}): Promise<SiteResult> {
+export async function scanSite(url: string, qs: QuestionDef[] = DEFAULT_QUESTIONS, emit: (e: ScanEvent) => void | Promise<void> = () => {}): Promise<SiteResult> {
   const scanned_at = new Date().toISOString();
   const norm = /^https?:\/\//i.test(url) ? url : `https://${url}`;
   let host = url;
@@ -44,7 +44,7 @@ export async function scanSite(url: string, qs: QuestionDef[] = DEFAULT_QUESTION
     emit({ type: "stage", url, stage: "error" });
   }
   const scored = () => (result.answers ? scoreSite(result.extraction!, result.answers, undefined, qs) : undefined);
-  emit({ type: "result", url, result, scored: scored() });
+  await emit({ type: "result", url, result, scored: scored() });
   const ps = await psi;
   result.extraction!.page_speed_score = ps.page_speed_score;
   emit({ type: "psi", url, page_speed_score: ps.page_speed_score, error: ps.error, scored: scored() });

@@ -9,7 +9,7 @@ import TopBar from "@/components/TopBar";
 import ScanConsole from "@/components/ScanConsole";
 import ResultsGrid from "@/components/ResultColumn";
 
-type SiteState = { url: string; stage: Stage | "queued"; extraction?: Extraction; shell?: boolean; result?: SiteResult; reason?: string };
+type SiteState = { url: string; stage: Stage | "queued"; extraction?: Extraction; shell?: boolean; result?: SiteResult; reason?: string; scanId?: string };
 const parse = (s: string) => [...new Set(s.split(/[\n,\s]+/).map((x) => x.trim()).filter(Boolean))].slice(0, 5);
 
 export default function Home() {
@@ -52,7 +52,7 @@ export default function Home() {
           const e = JSON.parse(line) as ScanEvent;
           if (e.type === "stage") patch(e.url, { stage: e.stage });
           else if (e.type === "extraction") patch(e.url, { extraction: e.extraction, shell: e.client_only_shell });
-          else if (e.type === "result") { patch(e.url, { result: e.result, reason: e.result.reason, extraction: e.result.extraction }); }
+          else if (e.type === "result") { patch(e.url, { result: e.result, reason: e.result.reason, extraction: e.result.extraction, scanId: e.scanId }); }
           else if (e.type === "psi") setSites((prev) => prev.map((s) => s.url === e.url && s.result?.extraction ? { ...s, extraction: { ...s.extraction!, page_speed_score: e.page_speed_score }, result: { ...s.result, extraction: { ...s.result.extraction, page_speed_score: e.page_speed_score } } } : s));
         }
       }
@@ -98,7 +98,7 @@ export default function Home() {
               <h2 className="display text-3xl">{mode === "COMPARE" ? "Side by side" : "Your score"}</h2>
               <span className="eyebrow">Weights & cutoffs: <a href="/studio" className="underline hover:text-accent">Classifier Studio</a></span>
             </div>
-            <ResultsGrid results={sites.map((s) => s.result!)} thresholds={thresholds} questions={questions} />
+            <ResultsGrid results={sites.map((s) => s.result!)} ids={Object.fromEntries(sites.filter((s) => s.scanId).map((s) => [s.url, s.scanId!]))} thresholds={thresholds} questions={questions} />
           </div>
         )}
       </section>

@@ -5,7 +5,7 @@ import { USD_PER_INPUT_TOKEN } from "../lib/jev";
 
 const urls = process.argv.slice(2);
 if (!urls.length) { console.error("usage: tsx scripts/checkpoint.ts <url> [url...]"); process.exit(1); }
-const results = await Promise.all(urls.map((u) => scanSite(u, undefined, (e) => e.type === "stage" && console.error(`[${u}] ${e.stage}`))));
+const results = await Promise.all(urls.map((u) => scanSite(u, undefined, (e) => { if (e.type === "stage") console.error(`[${u}] ${e.stage}`); })));
 let tokens = 0;
 for (const r of results) {
   console.log("\n==============================", r.url, "==============================");

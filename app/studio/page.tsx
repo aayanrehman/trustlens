@@ -28,7 +28,11 @@ export default function Studio() {
   const [presetName, setPresetName] = useState("");
   const file = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { loadActive().then((p) => { if (p) { setQs(p.questions); setT(p.thresholds); } }); loadScans().then((s) => setScans(s.slice(0, 5))); loadPresets().then(setPresets); }, []);
+  useEffect(() => {
+    loadActive().then((p) => { if (p) { setQs(p.questions); setT(p.thresholds); } }); loadPresets().then(setPresets);
+    // Last 5 scans: from Convex (all devices) when configured, else this browser's IndexedDB.
+    fetch("/api/recent").then((r) => (r.ok ? r.json() : [])).then((rows: SiteResult[]) => rows.length ? setScans(rows.slice(0, 5)) : loadScans().then((s) => setScans(s.slice(0, 5)))).catch(() => loadScans().then((s) => setScans(s.slice(0, 5))));
+  }, []);
   const errors = useMemo(() => validateQuestions(qs), [qs]);
 
   const upd = (i: number, p: Partial<QuestionDef>) => setQs((prev) => prev.map((q, j) => (j === i ? { ...q, ...p } : q)));

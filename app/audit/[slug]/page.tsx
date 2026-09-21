@@ -3,18 +3,29 @@ import Link from "next/link";
 import { decodeShare } from "@/lib/share";
 import Radar from "@/components/Radar";
 import AuditShare from "./share";
+import { getScan } from "@/lib/db";
+import { encodeShare } from "@/lib/share";
+import { radarValues, type Scored } from "@/lib/scoring";
+import AuditFull from "./full";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ d?: string }> };
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { d } = await searchParams; const p = decodeShare(d);
+const isId = (s: string) => /^[a-z0-9]{20,}$/i.test(s) && !s.includes(".");
+async function payloadFor(slug: string, d?: string) {
+  if (isId(slug)) { const s = await getScan(slug); if (s?.scored) { const sc = s.scored as Scored; return { p: { h: s.host, g: sc.grade, o: sc.overall, s: radarValues(sc), d: new Date(s.createdAt).toISOString().slice(0, 10) }, scan: s }; } }
+  return { p: decodeShare(d), scan: null };
+}
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const { slug } = await params; const { d: d0 } = await searchParams; const { p } = await payloadFor(slug, d0); const d = p ? encodeShare(p) : d0;
   if (!p) return { title: "TrustLens audit" };
   const og = `/api/og?d=${d}`;
   return { title: `${p.h} scored ${p.g} on TrustLens`, description: `SEO ${p.s[0]} · AI Search ${p.s[1]} · Trust ${p.s[2]} · Authority ${p.s[3] ?? "—"} · Discoverability ${p.s[4] ?? p.s[3]}`, openGraph: { images: [og] }, twitter: { card: "summary_large_image", images: [og] } };
 }
 
 export default async function AuditPage({ params, searchParams }: Props) {
-  const { slug } = await params; const { d } = await searchParams; const p = decodeShare(d);
+  const { slug } = await params; const { d: d0 } = await searchParams; const { p, scan } = await payloadFor(slug, d0); const d = p ? encodeShare(p) : d0;
+  if (scan) return <AuditFull scan={scan as never} share={d!} />;
   if (!p) return <main className="mx-auto max-w-3xl px-6 py-20"><h1 className="display text-4xl">No result found for {slug}.</h1><Link href="/" className="underline mt-4 inline-block">Run a scan →</Link></main>;
   const labels = ["SEO", "AI Search Visibility", "Trust", "Authority", "Discoverability"].slice(0, p.s.length);
   const bad = p.g === "D" || p.g === "F";

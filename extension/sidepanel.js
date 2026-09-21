@@ -46,7 +46,7 @@ async function scan() {
   $("#out").innerHTML = `<div class="status"><span class="eyebrow" id="stage">reading the page<span class="blink">_</span></span><span class="mono" id="cost">$0.00000</span></div><div class="track" id="track"><i></i></div><div class="log" id="log"><div>injecting scanner into the page…</div></div><div id="chips" class="chips"></div><div id="res"></div>`;
   try { await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content.js"] }); injected = true; } catch (e) { injected = false; boxing.done = true; $("#log").innerHTML = `<div>could not draw on this page (${esc(e.message)})</div>`; }
   try {
-    const res = await fetch(`${API}/api/scan`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ urls: tab.url }) });
+    const res = await fetch(`${API}/api/scan`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ urls: tab.url, source: "extension" }) });
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
     const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
     for (;;) {
@@ -56,7 +56,7 @@ async function scan() {
         if (!line.trim()) continue; const e = JSON.parse(line);
         if (e.type === "stage" && !result) $("#stage").innerHTML = ({ fetching: "server: fetching robots.txt + homepage", extracting: "server: extracting 12 signals in code", scoring: "server: asking Jev · 4 questions · 1 call", done: "server done", blocked: "blocked by robots.txt", error: "failed" }[e.stage]) + (/done|blocked|error/.test(e.stage) ? "" : '<span class="blink">_</span>');
         if (e.type === "extraction") $("#chips").innerHTML = chips(e.extraction);
-        if (e.type === "result") { result = e.result; scored = e.scored; if (boxing.done) reveal(result, scored); else { pending = { r: result, s: scored }; $("#stage").innerHTML = 'server done · still reading the page<span class="blink">_</span>'; setTimeout(() => { if (pending) { const p = pending; pending = null; reveal(p.r, p.s); } }, 45000); } }
+        if (e.type === "result") { result = e.result; scored = e.scored; result.scanId = e.scanId; if (boxing.done) reveal(result, scored); else { pending = { r: result, s: scored }; $("#stage").innerHTML = 'server done · still reading the page<span class="blink">_</span>'; setTimeout(() => { if (pending) { const p = pending; pending = null; reveal(p.r, p.s); } }, 45000); } }
         if (e.type === "psi" && result) { result.extraction.page_speed_score = e.page_speed_score; $("#chips").innerHTML = chips(result.extraction); if (e.scored) { scored = e.scored; if (!pending) reveal(result, scored, true); else pending = { r: result, s: scored }; } }
       }
     }
@@ -71,7 +71,7 @@ function reveal(r, s, quiet) {
   const tokens = r.usage?.input_tokens || 0, cost = tokens * RATE; $("#cost").textContent = `$${cost.toFixed(5)}`;
   const vals = CATS.map(([k]) => s.categories[k]?.score ?? 0);
   const share = btoa(JSON.stringify({ h: r.host, g: s.grade, o: s.overall, s: vals, d: r.scanned_at.slice(0, 10) })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  const auditUrl = `${API}/audit/${encodeURIComponent(r.host)}?d=${share}`;
+  const auditUrl = r.scanId ? `${API}/audit/${r.scanId}` : `${API}/audit/${encodeURIComponent(r.host)}?d=${share}`;
   const comp = $("#competitors").value.split(/[\n,\s]+/).filter(Boolean).slice(0, 4);
   const compareUrl = `${API}/?go=1&u=${encodeURIComponent([r.host, ...comp].join("\n"))}`;
   const wall = Date.now() - t0, lat = r.latency_ms || {};

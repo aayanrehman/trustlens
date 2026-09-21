@@ -34,7 +34,7 @@ const cell = "border rule bg-white/40 px-4 py-3 min-w-0";
  * of each row sit side by side, so SEO lines up with SEO and the grade with the grade regardless of
  * how many issues each site has. Rows reveal one at a time.
  */
-export default function ResultsGrid({ results, thresholds, questions }: { results: SiteResult[]; thresholds: Thresholds; questions: QuestionDef[] }) {
+export default function ResultsGrid({ results, thresholds, questions, ids = {} }: { results: SiteResult[]; thresholds: Thresholds; questions: QuestionDef[]; ids?: Record<string, string> }) {
   const n = Math.max(1, results.length);
   const [step, setStep] = useState(0); // 0..6: five categories then the grade
   const [sharing, setSharing] = useState<{ host: string; grade: string; overall: number; auditPath: string; share: string } | null>(null);
@@ -71,7 +71,7 @@ export default function ResultsGrid({ results, thresholds, questions }: { result
     if (!s || !r.extraction || !r.answers) return <div key={"g" + r.url} className={`${cell} rise`}><div className="display text-6xl text-scan">{r.status === "blocked" ? "Skipped" : "—"}</div></div>;
     const values = radarValues(s);
     const share = encodeShare({ h: r.host, g: s.grade, o: s.overall, s: values, d: r.scanned_at.slice(0, 10) });
-    const auditPath = `/audit/${slugify(r.host)}?d=${share}`;
+    const auditPath = ids[r.url] ? `/audit/${ids[r.url]}` : `/audit/${slugify(r.host)}?d=${share}`;
     const state = buildState(r.extraction, questions);
     const auth = r.answers.authority_positioning;
     return (
