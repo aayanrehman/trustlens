@@ -37,7 +37,7 @@ const cell = "border rule bg-white/40 px-4 py-3 min-w-0";
 export default function ResultsGrid({ results, thresholds, questions, ids = {} }: { results: SiteResult[]; thresholds: Thresholds; questions: QuestionDef[]; ids?: Record<string, string> }) {
   const n = Math.max(1, results.length);
   const [step, setStep] = useState(0); // 0..6: five categories then the grade
-  const [sharing, setSharing] = useState<{ host: string; grade: string; overall: number; auditPath: string; share: string } | null>(null);
+  const [sharing, setSharing] = useState<{ host: string; grade: string; overall: number; auditPath: string; share: string; scanId?: string } | null>(null);
   const key = results.map((r) => r.url + r.status).join("|");
   useEffect(() => { setStep(0); const t = setInterval(() => setStep((s) => (s >= 6 ? (clearInterval(t), s) : s + 1)), 500); return () => clearInterval(t); }, [key]);
 
@@ -86,8 +86,8 @@ export default function ResultsGrid({ results, thresholds, questions, ids = {} }
         </div>
         <div className="-mx-2"><Radar values={values} size={n >= 4 ? 180 : 230} /></div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <button onClick={() => setSharing({ host: r.host, grade: s.grade, overall: s.overall, auditPath, share })} className="bg-ink text-paper px-3 py-1.5 hover:bg-accent">Share my score</button>
-          <Link href={auditPath} className="border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper">Public page →</Link>
+          <button onClick={() => setSharing({ host: r.host, grade: s.grade, overall: s.overall, auditPath, share, scanId: ids[r.url] })} className="bg-ink text-paper px-3 py-1.5 hover:bg-accent">Share my score</button>
+          {ids[r.url] ? <Link href={`${auditPath}#report`} className="border border-accent text-accent px-3 py-1.5 hover:bg-accent hover:text-white">Fix-it report →</Link> : <Link href={auditPath} className="border border-ink px-3 py-1.5 hover:bg-ink hover:text-paper">Public page →</Link>}
         </div>
         <details className="mt-3 text-xs">
           <summary className="cursor-pointer eyebrow hover:text-accent">Latency, cost & what Jev saw</summary>

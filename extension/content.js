@@ -78,8 +78,10 @@
 
   // Auto-scroll through the whole page, boxing as the viewport reaches each element. Never cut short.
   let i = 0, stopped = false, found = 0; const vh = innerHeight; const t0 = Date.now();
+  // Two elements per tick when the queue is long, so big pages still finish in ~6s.
   const step = () => {
     if (stopped) return;
+    if (queue.length > 90 && i < queue.length - 1 && !queue[i].signal && !queue[i + 1].signal && Math.abs(queue[i].top - queue[i + 1].top) < innerHeight * 0.6) { const extra = queue[i++]; box(extra); }
     if (i >= queue.length) {
       beam.remove(); say(`scanned ${queue.length} elements · ${found} trust signals · ${schemaCount} schema blocks`); progress(1);
       report({ stage: "boxed", found, total: queue.length, ms: Date.now() - t0 });
@@ -91,7 +93,7 @@
     box(item); if (item.signal) found++;
     say(`${item.label} · ${i}/${queue.length}`); progress(i / queue.length);
     report({ stage: "box", label: item.label, signal: item.signal, i, total: queue.length });
-    setTimeout(step, item.signal ? 230 : 125);
+    setTimeout(step, item.signal ? 95 : 42);
   };
   setTimeout(step, 300);
 

@@ -6,6 +6,7 @@ import ShareWidget from "@/components/ShareWidget";
 import { DEFAULT_QUESTIONS } from "@/lib/questions";
 import { DEFAULT_THRESHOLDS, type Scored } from "@/lib/scoring";
 import type { SiteResult } from "@/lib/fields";
+import Report from "@/components/Report";
 
 // Public page for a stored scan: full category breakdown + issues, straight from Convex.
 export default function AuditFull({ scan, share }: { scan: { _id: unknown; createdAt: number; scored?: unknown } & Omit<SiteResult, "scanned_at">; share: string }) {
@@ -22,6 +23,7 @@ export default function AuditFull({ scan, share }: { scan: { _id: unknown; creat
         </div>
       </div>
       <div className="mt-6"><ResultsGrid results={[r]} thresholds={DEFAULT_THRESHOLDS} questions={DEFAULT_QUESTIONS} /></div>
+      {r.extraction && r.answers && <Report host={r.host} scanId={String(scan._id)} grade={sc?.grade} extraction={r.extraction} answers={r.answers} shell={r.client_only_shell} />}
       {open && sc && <ShareWidget host={r.host} grade={sc.grade} overall={sc.overall} auditPath={`/audit/${String(scan._id)}`} share={share} onClose={() => setOpen(false)} />}
     </main>
   );

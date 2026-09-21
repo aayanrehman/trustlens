@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import EmailGate from "./EmailGate";
 
 // One share sheet for the web app and the audit page: copy link, LinkedIn, X, download PNG.
-export default function ShareWidget({ host, grade, overall, auditPath, share, onClose }: { host: string; grade: string; overall: number; auditPath: string; share: string; onClose: () => void }) {
+export default function ShareWidget({ host, grade, overall, auditPath, share, onClose, scanId }: { host: string; grade: string; overall: number; auditPath: string; share: string; onClose: () => void; scanId?: string }) {
   const [url, setUrl] = useState(auditPath);
   const [copied, setCopied] = useState(false);
   useEffect(() => { setUrl(new URL(auditPath, window.location.origin).toString()); }, [auditPath]);
@@ -22,7 +23,11 @@ export default function ShareWidget({ host, grade, overall, auditPath, share, on
           <button onClick={copy} className="border rule px-3 py-2 hover:border-ink">{copied ? "Copied ✓" : "Copy link"}</button>
           <a href={`/api/og?d=${share}`} download={`trustlens-${host}.png`} className="border rule px-3 py-2 text-center hover:border-ink">Download PNG</a>
         </div>
-        <p className="mt-3 text-[11px] text-ink-2">The link opens a public results page with this card as its preview image. Nothing else about the site is stored.</p>
+        <div className="mt-4 border-t rule pt-3">
+          <div className="eyebrow">Get the fix-it report for {host}</div>
+          <div className="mt-2"><EmailGate host={host} scanId={scanId} grade={grade} source="share" compact /></div>
+        </div>
+        <p className="mt-3 text-[11px] text-ink-2">The link opens a public results page with this card as its preview image.</p>
       </div>
     </div>
   );

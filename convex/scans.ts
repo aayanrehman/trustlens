@@ -1,9 +1,9 @@
 import { v } from "convex/values";
-import { mutation, query, type MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 
 // Server-to-server calls carry a shared secret (set TRUSTLENS_SECRET on both Vercel and Convex).
 const guard = (secret: string) => { if (!process.env.TRUSTLENS_SECRET || secret !== process.env.TRUSTLENS_SECRET) throw new Error("unauthorized"); };
-const LIMITS = { sitesPerIpPerHour: 30, usdPerDay: 3, tokensPerSiteEstimate: 2500 };
+const LIMITS = { sitesPerIpPerHour: 60, usdPerDay: 3, tokensPerSiteEstimate: 2500 };
 const USD_PER_TOKEN = 0.042 / 1e6;
 const HOUR = 3_600_000;
 const today = () => new Date().toISOString().slice(0, 10);
@@ -46,6 +46,11 @@ export const save = mutation({
     const tokens = result.usage?.input_tokens ?? 0;
     const s = await spendRow(ctx);
     await ctx.db.patch(s._id, { usd: Math.max(0, s.usd + (tokens - LIMITS.tokensPerSiteEstimate) * USD_PER_TOKEN), tokens: s.tokens + tokens });
+    if (result.status !== "ok") { // skipped/failed scans cost nothing: give the visitor their slot back
+      const hourStart = Math.floor(Date.now() / HOUR) * HOUR;
+      const visitor = await ctx.db.query("visitors").withIndex("by_ip_hour", (q) => q.eq("ipHash", ipHash).eq("hourStart", hourStart)).unique();
+      if (visitor && visitor.scans > 0) await ctx.db.patch(visitor._id, { scans: visitor.scans - 1 });
+    }
     return await ctx.db.insert("scans", { ...result, source, ipHash, createdAt: Date.now() });
   },
 });
@@ -85,4 +90,10 @@ export const stats = query({
     const all = await ctx.db.query("spend").collect();
     return { today: { scans: day?.scans ?? 0, tokens: day?.tokens ?? 0, usd: day?.usd ?? 0 }, allTime: { scans: all.reduce((n, r) => n + r.scans, 0), tokens: all.reduce((n, r) => n + r.tokens, 0), usd: all.reduce((n, r) => n + r.usd, 0) } };
   },
+});
+
+/** Ops: wipe per-visitor counters (run with `npx convex run scans:clearVisitors --prod`). */
+export const clearVisitors = internalMutation({
+  args: {},
+  handler: async (ctx) => { const rows = await ctx.db.query("visitors").collect(); await Promise.all(rows.map((r) => ctx.db.delete(r._id))); return rows.length; },
 });
