@@ -1,7 +1,8 @@
 # TrustLens Chrome extension
 
-Scans the tab you're on. The side panel streams the score from the TrustLens server (keys stay there);
-`content.js` draws boxes on the live page around every signal it finds, then shows the grade in a banner.
+Trust & AI-visibility audit for education consultants. Click **Scan this page**: `content.js` auto-scrolls the tab,
+boxing every element it recognises (trust signals solid orange), while the server extracts the 12 signals and asks Jev.
+The score is shown only after the whole page has been read, with a latency + cost meter.
 
 ## Load it (30 seconds, no store review)
 1. Chrome → `chrome://extensions` → toggle **Developer mode** (top right).
