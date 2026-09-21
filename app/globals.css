@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f6f4ee;
-  --ink: #111111;
-  --ink-2: #55524b;
-  --rule: #d9d5cb;
-  --accent: #ff4d00;
+  --paper: #f5f7fb;
+  --ink: #0b1220;
+  --ink-2: #4b5567;
+  --rule: #d5dbe6;
+  --accent: #0b2a5b;   /* navy — UI accent, from the logo */
+  --teal: #12a39a;     /* logo teal — secondary */
+  --scan: #ff4d00;     /* orange — scanning only */
   --accent-ink: #ffffff;
-  --ok: #1a7f37;
+  --ok: #12a39a;
 }
 @theme inline {
   --color-paper: var(--paper);
@@ -15,6 +17,8 @@
   --color-ink-2: var(--ink-2);
   --color-rule: var(--rule);
   --color-accent: var(--accent);
+  --color-teal: var(--teal);
+  --color-scan: var(--scan);
   --color-ok: var(--ok);
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-inter);
@@ -38,9 +42,9 @@ body { font-family: var(--font-inter), system-ui, sans-serif; -webkit-font-smoot
 .blink { animation: blink 1s steps(1) infinite; }
 .grow { animation: grow 0.8s cubic-bezier(.2,.7,.2,1) both; }
 .scanning { position: relative; overflow: hidden; }
-.scanning::after { content: ""; position: absolute; inset: 0; height: 40%; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 12%, transparent), transparent); animation: scan 1.6s linear infinite; pointer-events: none; }
+.scanning::after { content: ""; position: absolute; inset: 0; height: 40%; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--scan) 14%, transparent), transparent); animation: scan 1.6s linear infinite; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .rise, .pop, .grow, .scanning::after, .blink { animation: none !important; } }
 
 input[type="range"] { accent-color: var(--accent); }
 textarea, input[type="text"], input[type="url"] { font: inherit; }
-::selection { background: var(--accent); color: white; }
+::selection { background: var(--scan); color: white; }

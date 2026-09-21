@@ -69,9 +69,9 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         {sites.length === 0 && (
           <div className="max-w-3xl rise">
-            <div className="eyebrow">Trust · SEO · GEO · Discoverability</div>
-            <h1 className="display text-5xl sm:text-7xl mt-3 leading-[0.95]">Does your website read as an <span className="text-accent">authority</span> — to people, and to AI?</h1>
-            <p className="mt-5 text-lg text-ink-2 max-w-xl">Paste one URL for a scan, or two to five for a side-by-side. Code extracts the signals; TypeSafe&rsquo;s Jev judges the meaning. Fractions of a cent per site.</p>
+            <div className="eyebrow">For education consultants · SEO · AI search · Trust · Authority · Discoverability</div>
+            <h1 className="display text-5xl sm:text-7xl mt-3 leading-[0.95]">Does your practice read as an <span className="text-teal">authority</span> — to parents, and to AI?</h1>
+            <p className="mt-5 text-lg text-ink-2 max-w-xl">Paste one URL for a scan, or two to five for a side-by-side against other consultants. Code extracts the signals; TypeSafe&rsquo;s Jev judges the meaning. Fractions of a cent per site.</p>
           </div>
         )}
         <form onSubmit={(e) => { e.preventDefault(); scan(); }} className={`mt-8 ${sites.length ? "" : "max-w-3xl"}`}>

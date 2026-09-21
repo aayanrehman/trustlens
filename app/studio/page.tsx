@@ -144,7 +144,7 @@ export default function Studio() {
           <div className="eyebrow">Thresholds · recompute instantly, no Jev calls</div>
           <div className="mt-3 space-y-2">
             <div className="eyebrow !text-ink mt-2">Category weights</div>
-            {(["seo", "geo", "trust", "discoverability"] as const).map((k) => <Slider key={k} label={k} value={t.weights[k]} min={0} max={100} onChange={(n) => setT({ ...t, weights: { ...t.weights, [k]: n } })} />)}
+            {(["seo", "geo", "trust", "authority", "discoverability"] as const).map((k) => <Slider key={k} label={k === "geo" ? "ai search" : k} value={t.weights[k] ?? DEFAULT_THRESHOLDS.weights[k]} min={0} max={100} onChange={(n) => setT({ ...t, weights: { ...t.weights, [k]: n } })} />)}
             <div className="eyebrow !text-ink mt-3">Grade cutoffs (min overall)</div>
             {(["A", "B", "C", "D"] as const).map((g) => <Slider key={g} label={`grade ${g}`} value={t.grade[g]} min={0} max={100} onChange={(n) => setT({ ...t, grade: { ...t.grade, [g]: n } })} />)}
             <div className="eyebrow !text-ink mt-3">Rules</div>

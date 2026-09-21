@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "TrustLens",
-  "version": "0.2.0",
-  "description": "Score the site you're on for Trust, SEO, GEO and Discoverability — judged by TypeSafe's Jev.",
+  "version": "0.3.0",
+  "description": "Trust & AI-visibility audit for education consultants. Boxes every element on the page, then scores SEO, AI search visibility, trust, authority and discoverability — judged by TypeSafe's Jev.",
   "permissions": ["activeTab", "tabs", "sidePanel", "scripting"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": { "default_title": "TrustLens — scan this site" },

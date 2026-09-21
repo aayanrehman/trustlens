@@ -6,7 +6,7 @@ export function radarPoints(values: number[], r: number, cx: number, cy: number)
     return [cx + rr * Math.cos(a), cy + rr * Math.sin(a)] as const;
   });
 }
-const DEFAULT_LABELS = ["SEO", "GEO", "Trust", "Discover", "Authority"];
+const DEFAULT_LABELS = ["SEO", "AI Search", "Trust", "Authority", "Discover"];
 
 export default function Radar({ values, labels = DEFAULT_LABELS, size = 220, animate = true, accent = "var(--accent)", ink = "currentColor" }: { values: number[]; labels?: string[]; size?: number; animate?: boolean; accent?: string; ink?: string }) {
   const cx = size / 2, cy = size / 2, r = size * 0.34;

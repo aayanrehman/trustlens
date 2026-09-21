@@ -19,8 +19,10 @@ export async function scanSite(url: string, qs: QuestionDef[] = DEFAULT_QUESTION
   let host = url;
   try { host = new URL(norm).hostname.replace(/^www\./, ""); } catch {}
   emit({ type: "stage", url, stage: "fetching" });
+  const t0 = Date.now();
   const psi = pageSpeed(norm);
   const fetched = await fetchAndExtract(norm);
+  const fetchMs = Date.now() - t0;
   if (fetched.status !== "ok") {
     psi.catch(() => {});
     const result: SiteResult = { url, host, pages_fetched: [], status: fetched.status, reason: fetched.reason, scanned_at };
@@ -33,8 +35,9 @@ export async function scanSite(url: string, qs: QuestionDef[] = DEFAULT_QUESTION
   emit({ type: "stage", url, stage: "scoring" });
   let result: SiteResult;
   try {
+    const t1 = Date.now();
     const { answers, usage, model } = await askJev(extraction, qs);
-    result = { url, host, pages_fetched: fetched.pages, client_only_shell: fetched.client_only_shell, status: "ok", extraction, answers, usage, model, scanned_at };
+    result = { url, host, pages_fetched: fetched.pages, client_only_shell: fetched.client_only_shell, status: "ok", extraction, answers, usage, model, scanned_at, latency_ms: { fetch: fetchMs, jev: Date.now() - t1 } };
     emit({ type: "stage", url, stage: "done" });
   } catch (e) {
     result = { url, host, pages_fetched: fetched.pages, client_only_shell: fetched.client_only_shell, status: "error", reason: `Jev call failed: ${(e as Error).message}`, extraction, scanned_at };

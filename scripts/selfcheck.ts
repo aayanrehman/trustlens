@@ -15,7 +15,8 @@ assert.equal(Object.keys(toSdkQuestions(DEFAULT_QUESTIONS)).length, 4);
 const empty: Extraction = { schema_types: [], has_faq_block: false, meta_title: { text: "", length: 0 }, meta_description: { text: "", length: 0 }, testimonial_text_blocks: [], credential_text_blocks: [], google_business_profile_linked: false, social_links_found: [], page_speed_score: null, mobile_friendly: null, word_count: 0, last_modified_signal: "unknown" };
 const worst = scoreSite(empty, {});
 assert.equal(worst.grade, "F");
-assert.equal(worst.categories.trust.score, 25, "no testimonials → discretion is N/A, credited"); 
+assert.equal(worst.categories.trust.score, 25, "no testimonials → discretion is N/A, credited");
+assert.equal(worst.categories.authority.score, 0);
 
 const full: Extraction = { schema_types: ["LocalBusiness", "FAQPage"], has_faq_block: true, meta_title: { text: "x".repeat(50), length: 50 }, meta_description: { text: "y".repeat(120), length: 120 }, testimonial_text_blocks: ["Sarah M. got into Rice with a $20k scholarship — parent"], credential_text_blocks: ["IECA professional member"], google_business_profile_linked: true, social_links_found: ["LinkedIn", "Instagram", "Facebook"], page_speed_score: 100, mobile_friendly: true, word_count: 2000, last_modified_signal: "2026-01-01" };
 const best = scoreSite(full, {

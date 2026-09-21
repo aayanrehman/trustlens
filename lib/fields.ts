@@ -34,6 +34,7 @@ export type SiteResult = {
   extraction?: Extraction;
   answers?: Record<string, JevAnswer>;
   usage?: { input_tokens: number; output_tokens: number };
+  latency_ms?: { fetch: number; jev: number }; // measured on the server
   model?: string;
   scanned_at: string;
 };

@@ -3,13 +3,13 @@ import { DEFAULT_QUESTIONS, type QuestionDef } from "./questions";
 
 // ---------- All tunable numbers live here. Studio sliders edit a copy of this object at runtime. ----------
 export type Thresholds = {
-  weights: { seo: number; geo: number; trust: number; discoverability: number }; // overall = weighted average
+  weights: { seo: number; geo: number; trust: number; authority: number; discoverability: number }; // overall = weighted average
   grade: { A: number; B: number; C: number; D: number }; // minimum overall for each letter; below D = F
   discretion_yes: number; // Noul probability at/above which discretion counts as respected
   min_words: number; // word_count at/above which the content-depth signal is full
 };
 export const DEFAULT_THRESHOLDS: Thresholds = {
-  weights: { seo: 25, geo: 30, trust: 30, discoverability: 15 },
+  weights: { seo: 20, geo: 25, trust: 25, authority: 15, discoverability: 15 },
   grade: { A: 85, B: 70, C: 55, D: 40 },
   discretion_yes: 0.6,
   min_words: 600,
@@ -20,14 +20,14 @@ const SEO = { speed: 50, mobile: 20, title: 15, description: 15 };
 const GEO = { readiness: 50, schema: 25, faq: 25 };
 const TRUST = { quality: 50, discretion: 25, credentials: 25 };
 const DISC = { gbp: 35, social: 35, depth: 15, freshness: 15 };
+const AUTH = { positioning: 65, credentials: 20, identity: 15 };
 
-export type Category = "seo" | "geo" | "trust" | "discoverability";
+export type Category = "seo" | "geo" | "trust" | "authority" | "discoverability";
 export type CategoryResult = { score: number; issues: string[] };
-export type Scored = { categories: Record<Category, CategoryResult>; overall: number; grade: "A" | "B" | "C" | "D" | "F"; authority: number };
-// Fifth axis on the radar only: how the site positions itself. Not part of the overall grade.
-const AUTHORITY_AXIS: Record<string, number> = { reads_as_recognized_authority: 100, reads_as_competent_but_generic: 55, reads_as_thin_or_unfinished: 15 };
-export const RADAR_LABELS = ["SEO", "GEO", "Trust", "Discover", "Authority"];
-export const radarValues = (s: Scored) => [s.categories.seo.score, s.categories.geo.score, s.categories.trust.score, s.categories.discoverability.score, s.authority];
+export type Scored = { categories: Record<Category, CategoryResult>; overall: number; grade: "A" | "B" | "C" | "D" | "F" };
+const POSITIONING: Record<string, number> = { reads_as_recognized_authority: 1, reads_as_competent_but_generic: 0.5, reads_as_thin_or_unfinished: 0.12 };
+export const RADAR_LABELS = ["SEO", "AI Search", "Trust", "Authority", "Discover"];
+export const radarValues = (s: Scored) => CATEGORY_ORDER.map((c) => s.categories[c].score);
 
 const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 const scoreLevel = (a: JevAnswer | undefined) => (a?.type === "score" ? a.score / Math.max(1, Object.keys(a.legend).length - 1) : 0); // 0..1
@@ -87,20 +87,29 @@ export function scoreSite(x: Extraction, answers: Record<string, JevAnswer>, t: 
   if (x.last_modified_signal !== "unknown") d += DISC.freshness; else discIssues.push("No freshness signal — no last-modified header or visible update date.");
 
   if (!speedKnown) seo = (seo / (100 - SEO.speed)) * 100;
+  // --- Authority: how the site positions itself, and whether an AI can confirm who is behind it ---
+  const authIssues: string[] = [];
+  const ap = answers.authority_positioning;
+  const pos = ap?.type === "choice" ? POSITIONING[ap.choice] ?? (ap.probabilities.reads_as_recognized_authority ?? 0) : 0;
+  let auth = pos * AUTH.positioning;
+  if (ap?.type === "choice" && ap.choice === "reads_as_thin_or_unfinished") authIssues.push("Reads as thin or unfinished to an AI — the title and description say little about who you are or what you do.");
+  else if (ap?.type === "choice" && ap.choice === "reads_as_competent_but_generic") authIssues.push("Reads competent but generic — name specific, checkable standing (IECA/HECA membership, a former admissions role, a degree, press).");
+  if (x.credential_text_blocks.length) auth += AUTH.credentials; else authIssues.push("No credentials on the page for an AI to cite.");
+  if (x.schema_types.some((s) => ["Person", "Organization", "ProfessionalService", "LocalBusiness", "EducationalOrganization"].includes(s))) auth += AUTH.identity; else authIssues.push("No Person/Organization structured data — assistants cannot confirm who runs the site.");
+
   const categories: Record<Category, CategoryResult> = {
     seo: { score: clamp(seo), issues: seoIssues },
     geo: { score: clamp(geo), issues: geoIssues },
     trust: { score: clamp(trust), issues: trustIssues },
+    authority: { score: clamp(auth), issues: authIssues },
     discoverability: { score: clamp(d), issues: discIssues },
   };
-  const w = t.weights;
-  const wsum = w.seo + w.geo + w.trust + w.discoverability || 1;
-  const overall = clamp((categories.seo.score * w.seo + categories.geo.score * w.geo + categories.trust.score * w.trust + categories.discoverability.score * w.discoverability) / wsum);
+  const w = { ...DEFAULT_THRESHOLDS.weights, ...t.weights }; // older saved presets may lack a key
+  const wsum = CATEGORY_ORDER.reduce((n, c) => n + w[c], 0) || 1;
+  const overall = clamp(CATEGORY_ORDER.reduce((n, c) => n + categories[c].score * w[c], 0) / wsum);
   const grade = overall >= t.grade.A ? "A" : overall >= t.grade.B ? "B" : overall >= t.grade.C ? "C" : overall >= t.grade.D ? "D" : "F";
-  const ap = answers.authority_positioning;
-  const authority = ap?.type === "choice" ? AUTHORITY_AXIS[ap.choice] ?? Math.round((ap.probabilities.reads_as_recognized_authority ?? 0) * 100) : 0;
-  return { categories, overall, grade, authority };
+  return { categories, overall, grade };
 }
 
-export const CATEGORY_LABELS: Record<Category, string> = { seo: "SEO", geo: "GEO", trust: "Trust", discoverability: "Discoverability" };
-export const CATEGORY_ORDER: Category[] = ["seo", "geo", "trust", "discoverability"];
+export const CATEGORY_LABELS: Record<Category, string> = { seo: "SEO", geo: "AI Search Visibility", trust: "Trust", authority: "Authority", discoverability: "Discoverability" };
+export const CATEGORY_ORDER: Category[] = ["seo", "geo", "trust", "authority", "discoverability"];

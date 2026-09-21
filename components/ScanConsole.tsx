@@ -27,14 +27,14 @@ export default function ScanConsole({ url, stage, extraction, shell, reason }: {
     <div className={`border rule p-4 rise ${live ? "scanning" : ""}`}>
       <div className="flex items-baseline justify-between gap-3">
         <div className="mono text-sm truncate">{url}</div>
-        <div className={`eyebrow whitespace-nowrap ${stage === "done" ? "text-ok" : stage === "blocked" || stage === "error" ? "text-accent" : ""}`}>{STAGE_TEXT[stage]}{live && <span className="blink">_</span>}</div>
+        <div className={`eyebrow whitespace-nowrap ${stage === "done" ? "text-ok" : stage === "blocked" || stage === "error" ? "text-scan" : ""}`}>{STAGE_TEXT[stage]}{live && <span className="blink">_</span>}</div>
       </div>
-      {reason && <p className="mt-2 text-sm text-accent">{reason}</p>}
-      {shell && <p className="mt-2 text-sm"><span className="bg-accent text-white px-1.5 py-0.5 eyebrow !text-white">crawler-invisible</span> This site renders entirely in the browser. Search engines can render it (slowly); most AI assistants cannot. Everything below is what a crawler sees.</p>}
+      {reason && <p className="mt-2 text-sm text-scan">{reason}</p>}
+      {shell && <p className="mt-2 text-sm"><span className="bg-scan text-white px-1.5 py-0.5 eyebrow !text-white">crawler-invisible</span> This site renders entirely in the browser. Search engines can render it (slowly); most AI assistants cannot. Everything below is what a crawler sees.</p>}
       {extraction && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {chips(extraction).map((c, i) => (
-            <span key={c.k} className={`pop inline-flex items-baseline gap-1.5 border px-2 py-0.5 text-xs mono ${c.on ? "border-ink" : "border-rule text-ink-2"}`} style={{ animationDelay: `${i * 70}ms` }}>
+            <span key={c.k} className={`pop inline-flex items-baseline gap-1.5 border px-2 py-0.5 text-xs mono ${c.on ? "border-scan text-ink" : "border-rule text-ink-2"}`} style={{ animationDelay: `${i * 70}ms` }}>
               <span className="eyebrow !text-[10px]">{c.k}</span>{c.v}
             </span>
           ))}
