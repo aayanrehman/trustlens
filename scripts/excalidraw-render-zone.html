@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#F7F4ED">
+<script type="module">
+  import React from "https://esm.sh/react@18.3.1"; import ReactDOM from "https://esm.sh/react-dom@18.3.1";
+  window.React = React; window.ReactDOM = ReactDOM;
+  window.EXCALIDRAW_ASSET_PATH = "https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/prod/";
+  const { exportToSvg } = await import("https://esm.sh/@excalidraw/excalidraw@0.18.0?deps=react@18.3.1,react-dom@18.3.1");
+  const data = await (await fetch("./board.json")).json();
+  const z = Number(new URLSearchParams(location.search).get("z") || 0);
+  const frame = data.elements.filter((e) => e.type === "frame")[z];
+  const els = data.elements.filter((e) => e.frameId === frame.id && e.type !== "frame");
+  const svg = await exportToSvg({ elements: els, appState: { ...data.appState, exportBackground: true, exportPadding: 10 }, files: {} });
+  svg.setAttribute("width", "1600"); svg.setAttribute("height", "900"); svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
+  document.body.appendChild(svg);
+</script></body>
