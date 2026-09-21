@@ -15,14 +15,14 @@
   const say = (m) => { const el = banner.querySelector("#tl-msg"); if (el) el.textContent = m; };
 
   const CRED = /\b(certified|certification|member of|IECA|HECA|NACAC|founder|years? of experience|former (admissions?|dean|counselor)|admissions officer|licensed|accredited)\b/i;
-  const DEG = /\b(M\.?Ed\.?|Ph\.?D\.?|Ed\.?D\.?|MBA|J\.?D\.?)\b/;
-  const visible = (el) => { const r = el.getBoundingClientRect(); return r.width > 40 && r.height > 12 && r.bottom > 0 && r.top < document.documentElement.scrollHeight; };
+  const DEG = /\b(M\.?Ed\.?|Ph\.?D\.?|Ed\.?D\.?|M\.?A\.?|B\.?A\.?|MBA|J\.?D\.?)(?=[\s,.)(]|$)/; // case-sensitive: "Med School" is not an M.Ed
+  const visible = (el) => { const r = el.getBoundingClientRect(); return r.width > 40 && r.height > 12 && getComputedStyle(el).visibility !== "hidden"; }; // rendered anywhere in the document, not just the viewport
   const text = (el) => (el.innerText || "").replace(/\s+/g, " ").trim();
   const pick = (sel, test, max) => { const out = []; for (const el of document.querySelectorAll(sel)) { if (out.length >= max) break; if (!visible(el) || el.closest("nav,header,footer,form,#trustlens-layer")) continue; const t = text(el); if (t.length > 15 && t.length < 900 && (!test || test(t, el)) && !out.some((o) => o.contains(el) || el.contains(o))) out.push(el); } return out; };
 
   const groups = [
-    ["testimonial", pick('blockquote, q, [class*="testimonial" i], [id*="testimonial" i], [class*="review" i], [class*="quote" i]', null, 8)],
-    ["credential", pick("p, li, h2, h3, h4, span", (t) => CRED.test(t) || DEG.test(t), 8)],
+    ["testimonial", pick('blockquote, q, [class*="testimonial" i], [id*="testimonial" i], [class*="review" i], [class*="quote" i]', (t, el) => !/head|title|__scroller|__track/i.test(el.className) && el.tagName !== "SECTION", 8)],
+    ["credential", pick("p, li, h1, h2, h3, h4, span, div", (t, el) => (el.children.length <= 2) && (CRED.test(t) || DEG.test(t)), 8)],
     ["social", [...document.querySelectorAll('a[href*="linkedin.com"], a[href*="instagram.com"], a[href*="facebook.com"], a[href*="youtube.com"]')].filter(visible).slice(0, 6)],
     ["google profile", [...document.querySelectorAll('a[href*="google.com/maps"], a[href*="g.page"], a[href*="maps.app.goo.gl"], iframe[src*="google.com/maps"]')].filter(visible).slice(0, 2)],
     ["faq", pick("h2, h3, h4, summary, dt", (t) => /\?\s*$/.test(t), 6)],

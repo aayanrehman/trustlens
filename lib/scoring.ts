@@ -35,8 +35,10 @@ export function scoreSite(x: Extraction, answers: Record<string, JevAnswer>, t: 
   // --- SEO ---
   const seoIssues: string[] = [];
   let seo = 0;
+  // Speed unknown (still measuring, or Google timed out): score the other SEO signals out of 100 instead of counting speed as 0.
+  const speedKnown = typeof x.page_speed_score === "number";
   if (x.page_speed_score === undefined) seoIssues.push("PageSpeed: measuring… (Google usually takes 20–60s)");
-  else if (x.page_speed_score === null) seoIssues.push("PageSpeed score unavailable — Google could not measure this site in time.");
+  else if (x.page_speed_score === null) seoIssues.push("PageSpeed score unavailable — Google could not measure this site in time; SEO scored on the remaining signals.");
   else { seo += (x.page_speed_score / 100) * SEO.speed; if (x.page_speed_score < 50) seoIssues.push(`Mobile PageSpeed score is ${x.page_speed_score}/100 — slow pages lose both visitors and rankings.`); else if (x.page_speed_score < 80) seoIssues.push(`Mobile PageSpeed score is ${x.page_speed_score}/100 — room to improve load time.`); }
   if (x.mobile_friendly) seo += SEO.mobile; else if (x.mobile_friendly === false) seoIssues.push("No mobile viewport configured — the page does not adapt to phones.");
   const tl = x.meta_title.length;
@@ -80,6 +82,7 @@ export function scoreSite(x: Extraction, answers: Record<string, JevAnswer>, t: 
   if (x.word_count < t.min_words) discIssues.push(`Thin content: ${x.word_count} words across fetched pages (target ${t.min_words}+).`);
   if (x.last_modified_signal !== "unknown") d += DISC.freshness; else discIssues.push("No freshness signal — no last-modified header or visible update date.");
 
+  if (!speedKnown) seo = (seo / (100 - SEO.speed)) * 100;
   const categories: Record<Category, CategoryResult> = {
     seo: { score: clamp(seo), issues: seoIssues },
     geo: { score: clamp(geo), issues: geoIssues },

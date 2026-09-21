@@ -29,6 +29,7 @@ assert.equal(best.overall, 100); assert.equal(best.grade, "A");
 assert.equal(scoreSite(full, {}, { ...DEFAULT_THRESHOLDS, grade: { A: 101, B: 101, C: 101, D: 0 } }).grade, "D");
 
 assert.match(scoreSite({ ...empty, page_speed_score: undefined }, {}).categories.seo.issues[0], /measuring/);
+assert.equal(scoreSite({ ...full, page_speed_score: null }, {}).categories.seo.score, 100, "unknown speed must not penalize");
 assert.equal(robotsAllows({ allow: [], disallow: ["/"] }, "/"), false);
 assert.equal(robotsAllows({ allow: ["/about"], disallow: ["/"] }, "/about"), true);
 assert.equal(robotsAllows({ allow: [], disallow: ["/private"] }, "/"), true);
