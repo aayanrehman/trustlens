@@ -107,7 +107,6 @@ flowchart LR
     X --> S
     S --> DB[(Convex\nscans · leads · spend · visitors)]
     S --> UI[Results · Compare · Report · Share card]
-    DB --> LIVE[/history live feed + header totals]
     PSI[Google PageSpeed] -.late patch.-> S
 ```
 
@@ -196,7 +195,7 @@ lib/jev.ts                 the only file that talks to TypeSafe
 lib/scoring.ts             weights, cutoffs, five categories, grade
 lib/report.ts              fix-it actions with simulated points + JSON-LD generator
 convex/                    scans, leads, spend, visitors — transactional rate limit
-app/                       scan · compare · studio · history · audit/[id] · extension · privacy
+app/                       scan · compare · studio · audit/[id] · extension · privacy
 extension/                 MV3 side panel + on-page boxing script
 scripts/excalidraw-board.mjs   generates the 10-zone teaching board in docs/
 ```
