@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { DEFAULT_QUESTIONS, validateQuestions, fieldsRead, toSdkQuestions } from "../lib/questions";
 import { FIELDS, type Extraction } from "../lib/fields";
 import { scoreSite, DEFAULT_THRESHOLDS } from "../lib/scoring";
-import { robotsAllows } from "../lib/extract";
+import { robotsAllows, CHALLENGE_TEST } from "../lib/extract";
 
 const errs = validateQuestions(DEFAULT_QUESTIONS);
 assert.deepEqual(errs, [], "default questions violate the field contract:\n" + errs.join("\n"));
@@ -31,6 +31,8 @@ assert.equal(scoreSite(full, {}, { ...DEFAULT_THRESHOLDS, grade: { A: 101, B: 10
 
 assert.match(scoreSite({ ...empty, page_speed_score: undefined }, {}).categories.seo.issues[0], /measuring/);
 assert.equal(scoreSite({ ...full, page_speed_score: null }, {}).categories.seo.score, 100, "unknown speed must not penalize");
+// A bot-challenge page must be reported as blocked-with-a-reason, never as a bare HTTP code.
+assert.equal(CHALLENGE_TEST("<title>Verifying…</title>"), true); assert.equal(CHALLENGE_TEST("<h1>Welcome</h1>"), false);
 assert.equal(robotsAllows({ allow: [], disallow: ["/"] }, "/"), false);
 assert.equal(robotsAllows({ allow: ["/about"], disallow: ["/"] }, "/about"), true);
 assert.equal(robotsAllows({ allow: [], disallow: ["/private"] }, "/"), true);

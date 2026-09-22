@@ -62,13 +62,23 @@ async function scan() {
       }
     }
   } catch (err) { $("#res").innerHTML = `<div class="err">${esc(err.message)}</div>`; }
+  // Safety net: never leave the panel silent if the stream ended without a result for this tab.
+  if (!result && !$("#res").innerHTML) $("#res").innerHTML = `<div class="warn" style="margin-top:16px"><div class="eyebrow" style="color:#ff4d00">no result</div><p style="margin:6px 0 0;font-size:13px;color:#4b5567">The server closed the connection before scoring this page. Try again.</p></div>`;
   running = false; btn.disabled = false; btn.textContent = "Scan again"; btn.classList.remove("live");
 }
 
 function reveal(r, s, quiet) {
   const res = $("#res");
   $("#stage").textContent = "scored";
-  if (r.status !== "ok" || !s) { res.innerHTML = `<div class="grade"><div class="letter bad">${r.status === "blocked" ? "Skip" : "—"}</div><div style="font-size:12px">${esc(r.reason || "")}</div></div>`; return; }
+  if (r.status !== "ok" || !s) {
+    const blocked = r.status === "blocked";
+    res.innerHTML = `<div class="warn" style="margin-top:16px"><div class="eyebrow" style="color:#ff4d00">${blocked ? "cannot be scanned" : "scan failed"}</div>
+      <div style="font-size:15px;margin-top:6px">${blocked ? "This page is closed to crawlers." : "Something went wrong reading this page."}</div>
+      <p style="margin:8px 0 0;font-size:13px;color:#4b5567">${esc(r.reason || "No reason given.")}</p></div>
+      <div class="links"><button class="fill" id="retry">Try again</button></div>`;
+    const b = $("#retry"); if (b) b.onclick = scan;
+    return;
+  }
   const tokens = r.usage?.input_tokens || 0, cost = tokens * RATE; $("#cost").textContent = `$${cost.toFixed(5)}`;
   const vals = CATS.map(([k]) => s.categories[k]?.score ?? 0);
   const share = btoa(JSON.stringify({ h: r.host, g: s.grade, o: s.overall, s: vals, d: r.scanned_at.slice(0, 10) })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

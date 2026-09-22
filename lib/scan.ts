@@ -28,7 +28,8 @@ export async function scanSite(url: string, qs: QuestionDef[] | undefined, emit:
   if (fetched.status !== "ok") {
     psi.catch(() => {});
     const result: SiteResult = { url, host, pages_fetched: [], status: fetched.status, reason: fetched.reason, scanned_at };
-    emit({ type: "stage", url, stage: fetched.status }); emit({ type: "result", url, result });
+    await emit({ type: "stage", url, stage: fetched.status });
+    await emit({ type: "result", url, result }); // await: the route persists on this event, and the stream closes when we return
     return result;
   }
   emit({ type: "stage", url, stage: "extracting" });
@@ -51,7 +52,7 @@ export async function scanSite(url: string, qs: QuestionDef[] | undefined, emit:
     result = { url, host, pages_fetched: fetched.pages, client_only_shell: fetched.client_only_shell, status: "ok", extraction, answers, usage, model, scanned_at, niche, latency_ms: { fetch: fetchMs, jev: Date.now() - t1 } };
     emit({ type: "stage", url, stage: "done" });
   } catch (e) {
-    result = { url, host, pages_fetched: fetched.pages, client_only_shell: fetched.client_only_shell, status: "error", reason: `Jev call failed: ${(e as Error).message}`, extraction, scanned_at };
+    result = { url, host, pages_fetched: fetched.pages, client_only_shell: fetched.client_only_shell, status: "error", reason: `Scoring failed: ${(e as Error).message}`, extraction, scanned_at };
     emit({ type: "stage", url, stage: "error" });
   }
   const scored = () => (result.answers ? scoreSite(result.extraction!, result.answers, undefined, qs ?? questionsFor(nicheOf(result.niche?.key))) : undefined);

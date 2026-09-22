@@ -132,6 +132,14 @@ function extractPage($: cheerio.CheerioAPI, headers: Headers) {
   return { types: [...types], has_faq, testimonials, credentials, gbp, social, word_count, lastMod, navLinks, mobile_viewport, client_only_shell };
 }
 
+// Anti-bot interstitials (proof-of-work, Cloudflare, "checking your browser") answer every
+// non-browser client with a challenge page. AI crawlers hit exactly the same wall, so this is a
+// finding, not a crash.
+const CHALLENGE_RE = /(Verifying…|Just a moment|Checking your browser|cf-browser-verification|__cf_chl|challenge-platform|pow-wrap|Enable JavaScript and cookies to continue)/i;
+export const CHALLENGE_TEST = (body: string) => CHALLENGE_RE.test(body);
+const isChallenge = (res: Response, body: string) =>
+  (res.status === 503 || res.status === 403 || res.status === 429) && (CHALLENGE_RE.test(body) || /pow_nc=|cf_clearance=/.test(res.headers.get("set-cookie") ?? ""));
+
 export type FetchOutcome =
   | { status: "blocked"; reason: string }
   | { status: "error"; reason: string }
@@ -146,10 +154,13 @@ export async function fetchAndExtract(input: string): Promise<FetchOutcome> {
   let res: Response;
   try {
     res = await get(u.href);
-    if (res.status === 403 || res.status === 406 || res.status === 429) res = await fetch(u.href, { headers: { "user-agent": BROWSER_UA, accept: "text/html" }, redirect: "follow", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-  } catch (e) { return { status: "error", reason: `Fetch failed: ${(e as Error).name === "TimeoutError" ? "timed out after 12s" : (e as Error).message}` }; }
-  if (!res.ok) return { status: "error", reason: `Site returned HTTP ${res.status}` };
-  const html = await res.text();
+    if ([403, 406, 429, 503].includes(res.status)) res = await fetch(u.href, { headers: { "user-agent": BROWSER_UA, accept: "text/html,application/xhtml+xml", "accept-language": "en-US,en;q=0.9" }, redirect: "follow", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  } catch (e) { return { status: "error", reason: `Could not reach the site: ${(e as Error).name === "TimeoutError" ? "no response within 12 seconds" : (e as Error).message}` }; }
+  const html = await res.text().catch(() => "");
+  if (!res.ok) {
+    if (isChallenge(res, html)) return { status: "blocked", reason: "This site sits behind a bot-protection challenge that only a real browser with JavaScript can pass. TrustLens is blocked — and so are the AI crawlers behind ChatGPT, Perplexity and Claude. Ask your host to allow-list reputable crawlers, or this site cannot be cited by AI assistants at all." };
+    return { status: "error", reason: `The site answered with HTTP ${res.status}${res.status >= 500 ? " (server error — try again in a moment)" : ""}.` };
+  }
   const $ = cheerio.load(html);
   const home = extractPage($, res.headers);
   const meta_title = clean($("title").first().text() || $('meta[property="og:title"]').attr("content") || "");
